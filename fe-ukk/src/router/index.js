@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import History from '../views/HistoryView.vue'
 import NotFound from '../views/NotFoundView.vue'
+import Product from '../views/ProductDetail.vue'
+import Login from '../views/Login.vue'
+
 const routes = [
   {
     path: '/',
@@ -16,9 +19,20 @@ const routes = [
     // ]
   },
   {
+    path: '/login',
+    name: 'login',
+    component: Login,
+    meta: { hideNavbarFooter: true }
+  },
+  {
     path: '/history',
     name: 'history',
     component: History
+  },
+  {
+    path: '/product',
+    name: 'product',
+    component: Product
   },
   {
     path: '/:pathMatch(.*)*',

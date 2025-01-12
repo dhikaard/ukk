@@ -1,18 +1,25 @@
 <template>
-<div class="surface-100 px-4 py-6 md:px-6 lg:px-8 text-center">
-    <img src="" alt="Image" height="50">
-    <div class="font-medium text-900 mt-4 mb-3">&copy; 2023 Bastion, Inc</div>
-    <p class="text-600 line-height-3 mt-0 mb-4">Cursus metus aliquam eleifend mi. Malesuada pellentesque elit eget gravida. Nunc eget lorem dolor sed viverra ipsum nunc aliquet bibendum. Massa tincidunt dui ut ornare lectus sit amet est placerat.</p>
-    <div class="flex align-items-center justify-content-center">
-        <a class="cursor-pointer text-700 mr-5">
-            <i class="pi pi-twitter"></i>
-        </a>
-        <a class="cursor-pointer text-700 mr-5">
-            <i class="pi pi-facebook"></i>
-        </a>
-        <a class="cursor-pointer text-700">
-            <i class="pi pi-github"></i>
-        </a>
+<div class="surface-section px-4 md:px-6 lg:px-8">
+    <Divider class="w-full"></Divider>
+    <div class="py-6 flex flex-column sm:flex-row sm:align-items-center justify-content-between">
+        <div class="flex flex-column align-items-center sm:align-items-start">
+            <div class="flex align-items-center mb-3">
+                <img src="../assets/logo.jpg" alt="Image" height="40" class="mr-2">
+                <span class="philosopher-regular text-2xl">AW KAMERA</span>
+            </div>
+            <div class="line-height-3">&copy; 2025 Aw Kamera Semarang, Inc. All rights reserved</div>
+        </div>
+        <div class="mt-3 sm:mt-0">
+            <a class="cursor-pointer text-500 transition-colors transition-duration-150 hover:text-700">
+                <i class="pi pi-twitter text-xl"></i>
+            </a>
+            <a class="cursor-pointer text-500 ml-3 transition-colors transition-duration-150 hover:text-700">
+                <i class="pi pi-facebook text-xl"></i>
+            </a>
+            <a class="cursor-pointer text-500 ml-3 transition-colors transition-duration-150 hover:text-700" href="https://www.instagram.com/awkamera_semarang/" target="_blank">
+                <i class="pi pi-instagram text-xl"></i>
+            </a>
+        </div>
     </div>
 </div>
 </template>
