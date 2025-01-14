@@ -1,5 +1,5 @@
 <template>
-<div class="surface-100 px-4 py-6 md:px-6 lg:px-8 text-center">
+<div class="surface-100 bottom-0 px-4 py-6 md:px-6 lg:px-8 text-center">
     <img src="" alt="Image" height="50">
     <div class="font-medium text-900 mt-4 mb-3">&copy; 2023 Bastion, Inc</div>
     <p class="text-600 line-height-3 mt-0 mb-4">Cursus metus aliquam eleifend mi. Malesuada pellentesque elit eget gravida. Nunc eget lorem dolor sed viverra ipsum nunc aliquet bibendum. Massa tincidunt dui ut ornare lectus sit amet est placerat.</p>
