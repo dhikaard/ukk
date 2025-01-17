@@ -4,19 +4,13 @@ import History from '../views/HistoryView.vue'
 import NotFound from '../views/NotFoundView.vue'
 import Product from '../views/ProductDetail.vue'
 import Login from '../views/Login.vue'
+import AdminRoles from '../views/AdminRoles.vue'
 
 const routes = [
   {
     path: '/',
     name: 'home',
     component: HomeView,
-    // children: [
-    //   {
-    //     path: '/home',
-    //     name: 'home',
-    //     component: HomeView,
-    //   }
-    // ]
   },
   {
     path: '/login',
@@ -33,6 +27,11 @@ const routes = [
     path: '/product',
     name: 'product',
     component: Product
+  },
+  {
+    path: '/manage-admin-roles',
+    name: 'adminRoles',
+    component: AdminRoles
   },
   {
     path: '/:pathMatch(.*)*',

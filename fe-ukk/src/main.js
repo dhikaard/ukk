@@ -13,6 +13,8 @@ import StyleClass from 'primevue/styleclass';
 import FocusTrap from 'primevue/focustrap';
 import Badge from 'primevue/badge';
 import Tooltip from 'primevue/tooltip';
+import { useDialog } from 'primevue/usedialog';
+
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
