@@ -5,17 +5,17 @@
             <a v-ripple class="flex p-2 align-items-center cursor-pointer p-ripple"
                 v-styleclass="{ selector: '#pb_profile_submenu', enterClass: 'hidden', enterActiveClass: 'slidedown', leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
                 <span class="mr-3 inline-flex">
-                    <Avatar name="Alexader Agunng" alt="User Avatar" style="height: 2.5rem;"/>
+                    <Avatar name="Dhika" alt="User Avatar" style="height: 2.5rem;"/>
                 </span>
                 <div>
-                    <span class="font-medium text-900 mb-2">Alexander Agung</span>
+                    <span class="font-medium text-900 mb-2">Dhika</span>
                     <p class="mt-1 mb-0 text-600">Pengguna</p>
                 </div>
                 <i class="pi pi-chevron-down text-700 ml-auto"></i>
             </a>
             <div class="border-top-1 surface-border my-3" style="height:1px"></div>
             <ul id="pb_profile_submenu" class="list-none p-0 m-0 overflow-hidden">
-                <li class="mb-2">
+                <!-- <li class="mb-2">
                     <a v-ripple class="flex p-2 align-items-start hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple">
                         <i class="pi pi-home text-500 mr-3 text-xl"></i>
                         <span>
@@ -51,7 +51,7 @@
                             <p class="mt-1 mb-0 text-600 text-sm">Slack, Discord and Wordpress</p>
                         </span>
                     </a>
-                </li>
+                </li> -->
                 <li class="mb-2">
                     <a v-ripple class="flex p-2 align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple">
                         <i class="pi pi-cog text-500 mr-3 text-xl"></i>
