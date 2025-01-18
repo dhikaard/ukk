@@ -5,11 +5,11 @@
                 <a v-ripple class="flex p-2 align-items-center cursor-pointer p-ripple"
                     v-styleclass="{ selector: '#pb_profile_submenu', enterClass: 'hidden', enterActiveClass: 'slidedown', leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
                     <span class="mr-3 inline-flex">
-                        <Avatar name="Alexander Agung" alt="User Avatar" style="height: 2.5rem;" />
+                        <Avatar :name="local.getUser()[0].name" alt="User Avatar" style="height: 2.5rem;" />
                     </span>
                     <div>
-                        <span class="font-medium text-900 mb-2">Alexander Agung</span>
-                        <p class="mt-1 mb-0 text-600">Pengguna</p>
+                        <span class="font-medium text-900 mb-2">{{ userName }}</span>
+                        <p class="mt-1 mb-0 text-600">{{ userRole }}</p>
                     </div>
                     <i class="pi pi-chevron-down text-700 ml-auto"></i>
                 </a>
@@ -58,7 +58,8 @@
             </li>
             <li class="mb-2">
                 <a v-ripple
-                    class="block p-2 font-medium text-700 flex align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple">
+                    class="block p-2 font-medium text-700 flex align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
+                    @click="logout">
                     <i class="pi pi-sign-out mr-2"></i>
                     <span>Keluar</span>
                 </a>
@@ -68,10 +69,15 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import Avatar from './Avatar.vue';
 import { useRouter } from 'vue-router';
+import local from '../utils/local-storage';
 
 const router = useRouter();
+
+const userName = ref('');
+const userRole = ref('');
 
 const goToAdminRoles = () => {
     router.push({ name: 'adminRoles' });
@@ -80,4 +86,18 @@ const goToAdminRoles = () => {
 const goToProduct = () => {
     router.push({ name: 'manageProducts' });
 };
+
+const logout = () => {
+    local.remove('token');
+    local.remove('user');
+    router.push({ name: 'login' });
+};
+
+onMounted(() => {
+    const userData = local.getUser();
+    if (userData) {
+        userName.value = userData[0].name;
+        userRole.value = userData[0].roleName;
+    }
+});
 </script>
