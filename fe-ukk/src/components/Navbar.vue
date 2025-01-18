@@ -8,7 +8,7 @@
         <div class="flex align-items-center flex-auto">
             <IconField iconPosition="left" class="w-full max-w-full">
                 <InputIcon class="pi pi-search"> </InputIcon>
-                <InputText v-model="value1" placeholder="Cari" class="w-full" />
+                <InputText v-model="value1" placeholder="Cari" class="w-full" @click="showCommandMenu" />
             </IconField>
         </div>
         <div class="flex ml-3 lg:ml-5">
@@ -37,7 +37,7 @@
             </ul>
         </div>
     </div>
-
+    <CommandMenu :visible="commandMenuVisible" @update:visible="commandMenuVisible = $event" />
 </template>
 
 <script setup>
@@ -45,9 +45,11 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Avatar from './Avatar.vue';
 import ProfileCard from './ProfileCard.vue';
+import CommandMenu from './CommandMenu.vue';
 
 const router = useRouter();
 const profileCardVisible = ref(false);
+const commandMenuVisible = ref(false);
 
 const goToHistory = () => {
     router.push({ name: 'history' });
@@ -55,6 +57,10 @@ const goToHistory = () => {
 
 const toggleProfileCard = () => {
     profileCardVisible.value = !profileCardVisible.value;
+};
+
+const showCommandMenu = () => {
+    commandMenuVisible.value = true;
 };
 
 const isActive = (routeName) => {
