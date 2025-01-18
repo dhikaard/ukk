@@ -2,7 +2,7 @@
     <div class="surface-section px-4 pt-8 md:px-6 lg:px-8">
         <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4">
             <div class="flex flex-column text-center md:text-left">
-                <span class="text-900 text-3xl font-medium mb-2">Admin & Peran</span>
+                <span class="text-900 text-3xl font-medium mb-2">Anggota Tim</span>
                 <span class="text-600 text-xl">Kamu dapat dengan mudah mengelola tim di halaman ini!😎</span>
             </div>
             <span class="p-input-icon-right mt-5 mb-2 md:mt-0 md:mb-0 w-full lg:w-25rem">
@@ -14,15 +14,16 @@
         </div>
         <section class="flex-wrap gap-3 justify-content-between border-bottom-1 surface-border">
             <Divider class="w-full"></Divider>
-            <div class="flex-shrink-0 w-15rem">
+            <div class="flex-shrink-0">
                 <h3 class="mb-4 mt-0 text-900 font-medium text-xl border-primary border-bottom-2 inline-block"
                     style="padding-bottom: 0.5rem;">
-                    Admin
+                    Anggota
                 </h3>
-                <p class="mb-4 mt-0 text-700 font-normal text-base">Kelola admin kamu di sini!</p>
-                <Button icon="pi pi-users" label="Undang Anggota" class="w-auto" @click="showDialog = true"></Button>
+                <p class="mb-4 mt-0 text-700 font-normal text-base">Kelola anggota tim Kamu di sini!</p>
+                <Button icon="pi pi-users" label="Undang Anggota" class="w-auto"
+                    @click="showDialogInvite = true"></Button>
             </div>
-            <div class="overflow-x-scroll mt-3">
+            <div class="mt-3">
                 <DataTable :value="members" :tabStyle="{ 'min-width': '60rem' }" rowHover>
                     <Column style="min-width:25rem">
                         <template #header>
@@ -66,15 +67,16 @@
             </div>
         </section>
         <section class="flex-wrap gap-3 py-6 justify-content-between surface-border">
-            <div class="flex-shrink-0 w-15rem">
+            <div class="flex-shrink-0">
                 <h3 class="mb-4 mt-0 text-900 font-medium text-xl border-primary border-bottom-2 inline-block"
                     style="padding-bottom: 0.5rem;">
-                    Peran
+                    Peran & Izin
                 </h3>
-                <p class="mb-4 mt-0 text-700 font-normal text-base">Tambah / ubah peran di sini!</p>
-                <Button icon="pi pi-plus" label="Tambah Peran" class="w-auto"></Button>
+                <p class="mb-4 mt-0 text-700 font-normal text-base">Kelola peran dan izin di sini!</p>
+                <Button icon="pi pi-plus" label="Tambah Peran" class="w-auto"
+                    @click="showDialogAddRoles = true"></Button>
             </div>
-            <div class="overflow-x-scroll mt-3">
+            <div class="mt-3">
                 <DataTable :value="roles" rowHover>
                     <Column style="min-width:25rem">
                         <template #header>
@@ -114,7 +116,8 @@
                 </DataTable>
             </div>
         </section>
-        <DialogInviteAdmin :visible="showDialog" @update:visible="showDialog = $event" />
+        <DialogInviteAdmin :visible="showDialogInvite" @update:visible="showDialogInvite = $event" />
+        <DialogAddRoles :visible="showDialogAddRoles" @update:visible="showDialogAddRoles = $event" />
     </div>
 </template>
 
@@ -123,9 +126,10 @@ import { defineAsyncComponent, ref } from 'vue';
 import Avatar from '../components/Avatar.vue';
 
 const DialogInviteAdmin = defineAsyncComponent(() => import('../components/DialogInviteAdmin.vue'));
-const showDialog = ref(false);
+const DialogAddRoles = defineAsyncComponent(() => import('../components/DialogAddRoles.vue'));
+const showDialogInvite = ref(false);
+const showDialogAddRoles = ref(false);
 
-// Data palsu untuk tabel members
 const members = ref([
     {
         name: 'Alexander Agung',
@@ -153,7 +157,6 @@ const members = ref([
     },
 ]);
 
-// Data palsu untuk tabel roles
 const roles = ref([
     {
         alias: 'Administrator',

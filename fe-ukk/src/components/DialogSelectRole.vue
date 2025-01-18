@@ -45,7 +45,7 @@
             <div class="pt-2 flex border-top-1 surface-border gap-2 w-full">
                 <Button icon="pi pi-times" @click="$emit('update:visible', false)" label="Batal"
                     class="p-button-text w-full p-button-secondary"></Button>
-                <Button icon="pi pi-check" @click="$emit('update:visible', false)" label="Selesai"
+                <Button icon="pi pi-user-plus" @click="$emit('update:visible', false)" label="Undang"
                     class="w-full p-button-primary"></Button>
             </div>
         </template>

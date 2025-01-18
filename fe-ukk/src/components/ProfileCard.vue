@@ -17,22 +17,23 @@
                 <ul id="pb_profile_submenu" class="list-none p-0 m-0 overflow-hidden">
                     <li class="mb-2">
                         <a v-ripple
-                            class="flex p-2 align-items-start hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
+                            class="flex p-2 align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
                             @click="goToAdminRoles">
                             <i class="pi pi-users text-500 mr-3 text-xl"></i>
                             <span>
-                                <span class="block text-700 font-medium">Admin</span>
+                                <span class="block text-700 font-medium">Anggota Tim</span>
                                 <p class="mt-1 mb-0 text-600 text-sm">Kelola admin dan peran</p>
                             </span>
                         </a>
                     </li>
                     <li class="mb-2">
                         <a v-ripple
-                            class="flex p-2 align-items-start hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple">
-                            <i class="pi pi-sliders-h text-500 mr-3 text-xl"></i>
+                            class="flex p-2 align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
+                            @click="goToProduct">
+                            <i class="pi pi-th-large text-500 mr-3 text-xl"></i>
                             <span>
-                                <span class="block text-700 font-medium">Izin</span>
-                                <p class="mt-1 mb-0 text-600 text-sm">Kelola izin admin</p>
+                                <span class="block text-700 font-medium">Barang</span>
+                                <p class="mt-1 mb-0 text-600 text-sm">Kelola barang sewa</p>
                             </span>
                         </a>
                     </li>
@@ -74,5 +75,9 @@ const router = useRouter();
 
 const goToAdminRoles = () => {
     router.push({ name: 'adminRoles' });
+};
+
+const goToProduct = () => {
+    router.push({ name: 'manageProducts' });
 };
 </script>
