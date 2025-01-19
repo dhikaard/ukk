@@ -1,12 +1,13 @@
 <template>
-  <div class="surface-overlay relative z-5">
-    <div class="px-3 md:px-3 py-3 lg:py-3 w-full flex align-items-center justify-content-between ">
-        <img src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=Kimberly" alt="Image" height="40" class="lg:hidden block border-round" />
+  <div class="surface-section shadow-3 relative z-5">
+    <CommandMenu :visible="commandMenuVisible" @update:visible="commandMenuVisible = $event" />
+    <div class="px-3 md:px-3 py-2 w-full flex align-items-center justify-content-between ">
+        <img src="/public/logo.webp" alt="Logo" class="lg:hidden block border-circle h-3rem border-1 cursor-pointer" @click="goToHome" />
         <div class="flex w-full justify-content-end lg:justify-content-between align-items-center gap-3">
-            <img src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=Kimberly" alt="Image" height="40" class="hidden lg:block border-round" />
+            <img src="/public/logo.webp" alt="Logo" class="hidden lg:block border-circle h-3rem  cursor-pointer" @click="goToHome" />
             <IconField iconPosition="right" class="w-6 hidden lg:block">
                 <InputIcon class="pi pi-search"> </InputIcon>
-                <InputText v-model="value1" placeholder="Search" class="w-full" />
+                <InputText v-model="value1" placeholder="Cari" class="w-full" @click="showCommandMenu" />
             </IconField>
             <span class="pi pi-bars text-4xl cursor-pointer block lg:hidden text-700 p-ripple"
               v-styleclass="{ selector: '#slideover-3', enterClass: 'hidden', enterActiveClass: 'fadeinright', leaveToClass: 'hidden', leaveActiveClass: 'fadeoutright', hideOnOutsideClick: true }"></span>
@@ -20,8 +21,7 @@
                     </li>
                     <li class="inline-flex relative">
                         <a v-ripple class="text-900 font-medium inline-flex align-items-center cursor-pointer px-1 lg:px-3 mr-2 lg:mr-0 border-bottom-2 border-transparent select-none p-ripple"
-                            v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'scalein', leaveToClass: 'hidden', leaveActiveClass: 'fadeout', hideOnOutsideClick: true}"
-                            @click="toggleProfileCard">
+                            v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'scalein', leaveToClass: 'hidden', leaveActiveClass: 'fadeout', hideOnOutsideClick: true}" >
                             <Avatar name="Dhika" alt="User Avatar" style="height: 2.5rem;"/>
                             <span class="hidden">My Account</span>
                         </a>
@@ -42,23 +42,24 @@
             <div class="surface-overlay border-top-1 surface-border">
                 <ul class="list-none p-0 m-0 flex lg:align-items-center select-none flex-column lg:flex-row">
                 <li>
-                    <a v-ripple class="flex px-4 p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple">
+                    <a v-ripple class="flex px-4 p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
+                        @click="goToHome">
                         <i class="text-lg pi pi-home mr-2"></i>
                         <span>Home</span>
                     </a>
                 </li>
                 <li>
                     <a v-ripple class="flex px-4 p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
-                    @click="goToHistory">
+                        @click="goToHistory">
                         <i class="text-lg pi pi-inbox mr-2"></i>
-                        <span>History</span>
+                        <span>Riwayat Sewa</span>
                     </a>
                 </li>
                 <li>
-                    <a v-ripple
-                        class="flex px-4 p-3 lg:px-3 align-items-center text-600 hover:text-900 hover:surface-100 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple">
-                        <i class="text-lg pi pi-bell text-base lg:text-2xl mr-2 lg:mr-0" v-badge.danger></i>
-                        <span class="block lg:hidden font-medium">Notifications</span>
+                    <a v-ripple class="flex px-4 p-3 lg:px-3 align-items-center text-600 hover:text-900 hover:surface-100 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
+                        @click="goToTerms">
+                        <i class="text-lg pi pi-bell text-base lg:text-2xl mr-2 lg:mr-0" ></i>
+                        <span class="block lg:hidden font-medium">Ketentuan</span>
                     </a>
                 </li>
                 <li>
@@ -110,7 +111,7 @@
                 <a
                     class="nav-link relative  cursor-pointer flex items-center px-4 py-3 text-gray-500"
                     :class="{ 'active': isActive('home') }"
-                    @click="router.push({ name: 'home' })">
+                    @click="goToHome">
                     <i class="pi pi-home mr-2"></i>
                     <span>Home</span>
                     <span class="border-anim"></span>
@@ -122,15 +123,15 @@
                     :class="{ 'active': isActive('history') }"
                     @click="goToHistory">
                     <i class="pi pi-inbox mr-2"></i>
-                    <span>History</span>
+                    <span>Riwayat Sewa</span>
                     <span class="border-anim"></span>
                 </a>
             </li>
             <li>
                 <a
                     class="nav-link relative  cursor-pointer flex items-center px-4 py-3 text-gray-500"
-                    :class="{ 'active': isActive('ketentuan') }"
-                    @click="router.push({ name: 'ketentuan' })">
+                    :class="{ 'active': isActive('terms') }"
+                    @click="goToTerms">
                     <i class="pi pi-inbox mr-2"></i>
                     <span>Ketentuan</span>
                     <span class="border-anim"></span>
@@ -143,21 +144,46 @@
 
 <script setup>
 import { ref } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Avatar from './Avatar.vue';
 import ProfileCard from './ProfileCard.vue';
+import CommandMenu from './CommandMenu.vue';
 
 const router = useRouter();
 const profileCardVisible = ref(false);
+const commandMenuVisible = ref(false);
+
+onMounted(() => {
+    window.addEventListener('keydown', handleShortcut);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleShortcut);
+});
+
+const showCommandMenu = () => {
+    commandMenuVisible.value = true;
+};
+
+const handleShortcut = (event) => {
+    if (event.ctrlKey && event.key === 'k') {
+        event.preventDefault();
+        showCommandMenu();
+    }
+};
 
 const goToHistory = () => {
     router.push({ name: 'history' });
 };
 
-const toggleProfileCard = () => {
-    profileCardVisible.value = !profileCardVisible.value;
+const goToHome = () => {
+    router.push({ name: 'home' });
 };
 
+const goToTerms = () => {
+    router.push({ name: 'terms' });
+};
 
 const isActive = (routeName) => {
     return router.currentRoute.value.name === routeName;

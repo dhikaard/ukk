@@ -60,10 +60,7 @@ export const useHomeViewStore = defineStore({
                 body: {
                     dateFrom: this.dateFrom,
                     dateTo: this.dateTo,
-                    jnsPelayananId: this.jnsPelayananId || -99,
-                    jnsPembayaranId: this.jnsPembayaranId || '',
                     keyword: this.keyword,
-                    statusDoc: this.statusDoc == 'All' ? '' : this.statusDoc,
                     limit: this.limit,
                     offset: this.offset,
                 }

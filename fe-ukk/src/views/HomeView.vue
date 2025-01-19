@@ -1,42 +1,38 @@
 <template>
-  <div>
-    <div class="block lg:hidden lg:w-3 px-2 md:px-3 pt-3">
+  <div class="surface-section">
+    <CommandMenu :visible="commandMenuVisible" @update:visible="commandMenuVisible = $event" />
+    <div class="block lg:hidden lg:w-3 px-2 md:px-3 mt-3">
       <IconField iconPosition="right" class="w-12">
         <InputIcon class="pi pi-search"> </InputIcon>
-        <InputText v-model="context.keyword" placeholder="Search" class="w-full" />
+        <InputText v-model="context.keyword" placeholder="Search" class="w-full"  @click="showCommandMenu"/>
       </IconField>
     </div>
-    <div class="surface-section py-3 px-2 md:px-3">
+    <div class="surface-section py-7 px-2 md:px-3">
       <div>
-        <div class="text-900 font-bold text-3xl text-center my-4">
+        <div class="text-900 font-bold text-3xl text-center">
           Adventure, Outdoor & Camping
-          <p class="text-600 font-normal text-xl text-center">
+          <p class="text-600 font-normal text-base text-center">
             Kami menyediakan berbagai macam perlengkapan untuk kegiatan outdoor Anda
           </p>
         </div>
       </div>
       <Divider class="w-full"></Divider>
       <div class="grid grid-nogutter">
-        <div class="col-12 p-0 mt-2 flex flex-column lg:flex-row align-items-center mb-2">
-          <Button class="p-button-rounded text-white px-5 lg:mr-4 sm w-full lg:w-auto border-none" label="Filters"
-            :icon="openDropdown ? 'ml-3 pi pi-chevron-down' : 'ml-3 pi pi-chevron-up'" iconPos="right"
-            v-styleclass="{ selector: '.filter-container', enterClass: 'hidden', enterActiveClass: 'slidedown', leaveToClass: 'hidden', leaveActiveClass: 'slideup' }"
-            @click="openDropdown = !openDropdown"></Button>
-          <div class="grid flex-column lg:flex-row w-full h-full">
-            <div class="col-12 lg:col flex align-items-center flex-wrap" style="column-gap: 5px; row-gap:5px;">
-              <Chip v-for="filter of context.selectedFilters" :key="filter" :label="filter" removable
-                class="mr-3 h-auto px-4 mt-3 lg:mt-0" removeIcon="pi pi-times" :style="{ 'border-radius': '50px' }"
-                @click="context.selectedFilters.splice(context.selectedFilters.indexOf(filter.toString()), 1) && context.selectedCategory.splice(context.selectedCategory.indexOf(filter), 1)">
-              </Chip>
-              <a v-ripple v-if="context.selectedFilters.length > 0" tabindex="0"
-                class="text-900 cursor-pointer text-center px-3 py-2 mt-3 lg:mt-0 border-1 border-200 lg:border-none inline-block hover:bg-primary hover:border-primary transition-duration-150 p-ripple"
-                style="border-radius:50px; max-width: 7rem;"
-                @click="context.selectedCategory = []; context.selectedFilters = [];">Clear All</a>
+        <div class="col-12 p-0 mt-5 flex flex-column lg:flex-row align-items-center mb-1">
+            <Button class="p-button-rounded p-button-primary  text-white px-5 md:py-2 py-3 lg:mr-4 sm w-full lg:w-auto border-none" label="Filters" :icon="openDropdown ? 'ml-3 pi pi-chevron-down' : 'ml-3 pi pi-chevron-up'" iconPos="right"
+                v-styleclass="{ selector: '.filter-container', enterClass:'hidden', enterActiveClass:'slidedown', leaveToClass:'hidden', leaveActiveClass:'slideup' }" @click="openDropdown = !openDropdown"></Button>
+            <div class="grid flex-column lg:flex-row w-full h-full">
+                <div class="col-12 lg:col flex align-items-center flex-wrap" style="column-gap: 5px; row-gap:5px;">
+                    <Chip v-for="filter of context.selectedFilters" :key="filter" :label="filter" removable class="mr-3 h-auto px-4 mt-3 lg:mt-0" removeIcon="pi pi-times" :style="{'border-radius':'50px'}"
+                          @click="context.selectedFilters.splice(context.selectedFilters.indexOf(filter.toString()), 1) && context.selectedCategory.splice(context.selectedCategory.indexOf(filter), 1)">
+                    </Chip>
+                    <a v-ripple v-if="context.selectedFilters.length > 0" tabindex="0" class="text-900 cursor-pointer text-center px-3 py-2 mt-3 lg:mt-0 border-1 border-200 lg:border-none inline-block hover:bg-primary hover:border-primary transition-duration-150 p-ripple" style="border-radius:50px; max-width: 7rem;" @click="context.selectedFilters = []; context.selectedCategory = [];">Clear All</a>
+                </div>
             </div>
-          </div>
         </div>
         <div
-          class="filter-container col-12 overflow-hidden transition-all transition-duration-400 transition-ease-in-out">
+        class="filter-container col-12 overflow-hidden transition-all transition-duration-400 transition-ease-in-out">
+        <Button label="Terapkan Filter" icon="pi pi-filter" class="p-button-rounded w-full lg:w-auto p-button-primary" @click="applyFilter" />
           <div class="grid grid-nogutter flex-column lg:flex-row">
             <div
               class="flex-auto lg:flex-1 col mt-0 lg:mt-2 mr-0 lg:mr-4 p-4 flex-column border-1 surface-border border-round">
@@ -75,10 +71,10 @@
             </div>
           </div>
         </div>
-        <div class="w-full border-2 border-dashed border-round surface-border surface-section mt-5 px-1">
-          <DataView :value="context.product" :layout="context.layout">
+        <div class="w-full border-2 border-dashed border-round-xs surface-border surface-section mt-5 ">
+          <DataView :value="context.product" :layout="context.layout" class="border-round-lg">
             <template #header>
-              <div class="flex justify-content-between w-full align-items-center -px-8">
+              <div class="flex justify-content-between w-full align-items-center border-round-lg">
                 <Paginator :rows="context.rows" :totalRecords="context.totalRecords" @page="context.onPageChange"
                   :template="{
                     '640px': 'PrevPageLink CurrentPageReport NextPageLink',
@@ -109,19 +105,11 @@
                           <span class="font-medium text-secondary text-sm">{{ item.category }}</span>
                           <div class="text-lg font-medium text-900 mt-2">{{ item.name }}</div>
                         </div>
-                        <div class="surface-100 p-1" style="border-radius: 30px">
-                          <div class="surface-0 flex align-items-center gap-2 justify-content-center py-1 px-2"
-                            style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);">
-                            <span class="text-900 font-medium text-sm">{{ item.rating }}</span>
-                            <i class="pi pi-star-fill text-yellow-500"></i>
-                          </div>
-                        </div>
                       </div>
                       <div class="flex flex-column md:align-items-end gap-5">
                         <span class="text-xl font-semibold text-900">${{ item.price }}</span>
                         <div class="flex flex-row-reverse md:flex-row gap-2">
-                          <Button icon="pi pi-heart" outlined></Button>
-                          <Button @click="showProducts" icon="pi pi-shopping-cart" label="Sewa Sekarang"
+                          <Button @click="showProducts" icon="pi pi-shopping-cart" label="Lihat Detail"
                             :disabled="item.inventoryStatus === 'OUTOFSTOCK'"
                             class="flex-auto md:flex-initial white-space-nowrap"></Button>
                         </div>
@@ -150,21 +138,13 @@
                           <span class="font-medium text-secondary text-sm">{{ item.category }}</span>
                           <div class="text-lg font-medium text-900 mt-1">{{ item.name }}</div>
                         </div>
-                        <div class="surface-100 p-1" style="border-radius: 30px">
-                          <div class="surface-0 flex align-items-center gap-2 justify-content-center py-1 px-2"
-                            style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);">
-                            <span class="text-900 font-medium text-sm">{{ item.rating }}</span>
-                            <i class="pi pi-star-fill text-yellow-500"></i>
-                          </div>
-                        </div>
                       </div>
                       <div class="flex flex-column gap-4 mt-4">
                         <span class="text-2xl font-semibold text-900">${{ item.price }}</span>
                         <div class="flex gap-2">
-                          <Button @click="showProducts" icon="pi pi-shopping-cart" label="Sewa Sekarang"
+                          <Button @click="showProducts" icon="pi pi-shopping-cart" label="Lihat Detail"
                             :disabled="item.inventoryStatus === 'OUTOFSTOCK'"
                             class="flex-auto white-space-nowrap"></Button>
-                          <Button icon="pi pi-heart" outlined></Button>
                         </div>
                       </div>
                     </div>
@@ -180,13 +160,12 @@
 </template>
 
 <script setup>
-import { useDialog } from 'primevue/usedialog';
-import { onMounted } from "vue";
-import { useHomeViewStore } from "../stores/home-view.store";
-
-const dialog = useDialog();
+import { onMounted, onUnmounted, ref } from 'vue';
+import { useHomeViewStore } from '@/stores/home-view.store';
+import CommandMenu from '@/components/CommandMenu.vue';
 
 const context = useHomeViewStore();
+const commandMenuVisible = ref(false);
 
 // const DialogRentVue = defineAsyncComponent(() => import('../components/DialogRent.vue'));
 // const showProducts = () => {
@@ -204,6 +183,10 @@ const context = useHomeViewStore();
 //         }
 //     });
 // }
+
+const showCommandMenu = () => {
+    commandMenuVisible.value = true;
+};
 
 onMounted(() => {
   context.getProducts();
