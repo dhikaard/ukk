@@ -2,8 +2,13 @@
     <div class="surface-section px-4 pt-8 md:px-6 lg:px-8">
         <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4">
             <div class="flex flex-column text-center md:text-left">
-                <span class="text-900 text-3xl font-medium mb-2">Barang</span>
-                <span class="text-600 text-xl">Kamu dapat dengan mudah mengelola barang sewa di halaman ini!😎</span>
+                <div class="flex align-items-center justify-content-center md:justify-content-start mb-2">
+                    <span
+                        class="border-circle w-3rem h-3rem flex align-items-center justify-content-center surface-100 mr-2">
+                        <i class="bi bi-box-seam text-900 text-3xl"></i>
+                    </span> <span class="text-900 text-3xl font-medium">Barang</span>
+                </div>
+                <span class="text-600 text-xl">Kamu dapat dengan mudah mengelola barang sewa di halaman ini!🤭</span>
             </div>
             <span class="p-input-icon-right mt-5 mb-2 md:mt-0 md:mb-0 w-full lg:w-25rem">
                 <IconField iconPosition="left">
@@ -28,7 +33,8 @@
                             <div class="flex align-items-center gap-3">
                                 <Avatar :name="data.name" alt="User Avatar" style="height: 2.5rem;" />
                                 <div>
-                                    <p class="mt-0 mb-2 font-medium text-lg text-color-primary">{{ data.namaBarang }}</p>
+                                    <p class="mt-0 mb-2 font-medium text-lg text-color-primary">{{ data.namaBarang }}
+                                    </p>
                                     <p class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.merk }}
                                     </p>
                                 </div>
@@ -48,7 +54,8 @@
                             <span class="font-semibold text-sm text-color-secondary">Stok</span>
                         </template>
                         <template #body="{ data }">
-                            <p class="mt-0 mb-2 font-normal text-right text-base text-color-secondary">{{ data.stock }}</p>
+                            <p class="mt-0 mb-2 font-normal text-right text-base text-color-secondary">{{ data.stock }}
+                            </p>
                         </template>
                     </Column>
                     <Column style="min-width:10rem">
@@ -56,7 +63,8 @@
                             <span class="font-semibold text-sm text-color-secondary">Harga / hari</span>
                         </template>
                         <template #body="{ data }">
-                            <p class="mt-0 mb-2 font-normal text-right text-base text-color-secondary">{{ toCurrencyLocale(data.price) }}</p>
+                            <p class="mt-0 mb-2 font-normal text-right text-base text-color-secondary">{{
+                                toCurrencyLocale(data.price) }}</p>
                         </template>
                     </Column>
                     <Column style="min-width:10rem">
@@ -64,7 +72,8 @@
                             <span class="font-semibold text-sm text-color-secondary">Denda (%)</span>
                         </template>
                         <template #body="{ data }">
-                            <p class="mt-0 mb-2 font-normal text-right text-base text-color-secondary">{{ data.fine_bill }}%</p>
+                            <p class="mt-0 mb-2 font-normal text-right text-base text-color-secondary">{{ data.fine_bill
+                                }}%</p>
                         </template>
                     </Column>
                     <Column style="min-width:14rem">

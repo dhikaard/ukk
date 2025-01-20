@@ -7,6 +7,7 @@ import Login from '../views/Login.vue'
 import AdminRoles from '../views/AdminRoles.vue'
 import ManageProducts from '../views/ManageProducts.vue'
 import Register from '../views/Register.vue'
+import ManageTransactions from '@/views/ManageTransactions.vue'
 
 const routes = [
   {
@@ -45,6 +46,11 @@ const routes = [
     path: '/manage-products',
     name: 'manageProducts',
     component: ManageProducts
+  },
+  {
+    path: '/manage-transactions',
+    name: 'manageTransactions',
+    component: ManageTransactions
   },
   {
     path: '/:pathMatch(.*)*',

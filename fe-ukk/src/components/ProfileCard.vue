@@ -31,10 +31,21 @@
                         <a v-ripple
                             class="flex p-2 align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
                             @click="goToProduct">
-                            <i class="pi pi-th-large text-500 mr-3 text-xl"></i>
+                            <i class="bi bi-box-seam text-500 mr-3 text-xl"></i>
                             <span>
                                 <span class="block text-700 font-medium">Barang</span>
                                 <p class="mt-1 mb-0 text-600 text-sm">Kelola barang sewa</p>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a v-ripple
+                            class="flex p-2 align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
+                            @click="goToTransaction">
+                            <i class="bi bi-ui-checks text-500 mr-3 text-xl"></i>
+                            <span>
+                                <span class="block text-700 font-medium">Transaksi</span>
+                                <p class="mt-1 mb-0 text-600 text-sm">Kelola transaksi penyewa</p>
                             </span>
                         </a>
                     </li>
@@ -86,6 +97,10 @@ const goToAdminRoles = () => {
 
 const goToProduct = () => {
     router.push({ name: 'manageProducts' });
+};
+
+const goToTransaction = () => {
+    router.push({ name: 'manageTransactions' });
 };
 
 const logout = () => {
