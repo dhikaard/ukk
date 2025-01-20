@@ -4,7 +4,7 @@ import './assets/main.css'
 import 'primeflex/primeflex.css'
 import 'primeicons/primeicons.css'
 import 'primevue/resources/primevue.min.css'
-// import 'primevue/resources/themes/aura-light-cyan/theme.css'
+// import 'primevue/resources/themes/aura-light-blue/theme.css'
 
 // Components
 import PrimeVue from 'primevue/config';

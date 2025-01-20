@@ -6,12 +6,17 @@
     <div class="mt-6 mb-5 font-bold text-6xl text-900 text-center">Page Not Found</div>
     <p class="text-700 text-3xl mt-0 mb-6 text-center">Sorry, we couldn't find the page.</p>
     <div class="text-center">
-        <Button class="p-button-text mr-2" label="Go Back" icon="pi pi-arrow-left"></Button>
-        <Button label="Go to Dashboard" icon="pi pi-home"></Button>
+        <Button @click="goToHome" label="Go to Dashboard" icon="pi pi-home"></Button>
     </div>
 </div>
 </template>
 
-<script>
+<script setup>
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
+
+const goToHome = () => {
+    router.push({ name: 'home' });
+};
 </script>
