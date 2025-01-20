@@ -5,7 +5,8 @@
                 <a v-ripple class="flex p-2 align-items-center cursor-pointer p-ripple"
                     v-styleclass="{ selector: '#pb_profile_submenu', enterClass: 'hidden', enterActiveClass: 'slidedown', leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
                     <span class="mr-3 inline-flex">
-                        <Avatar :name="local.getUser()[0].name" alt="User Avatar" style="height: 2.5rem;" />
+                        <Avatar :name="(local.getUser()?.[0]?.name || 'Tamu')" alt="User Avatar"
+                            style="height: 2.5rem;" />
                     </span>
                     <div>
                         <span class="font-medium text-900 mb-2">{{ userName }}</span>
@@ -76,8 +77,8 @@ import local from '../utils/local-storage';
 
 const router = useRouter();
 
-const userName = ref('');
-const userRole = ref('');
+const userName = ref('Tamu');
+const userRole = ref('Pengunjung');
 
 const goToAdminRoles = () => {
     router.push({ name: 'adminRoles' });

@@ -8,34 +8,68 @@
                 </div>
                 <div class="text-900 text-3xl font-medium mb-3">Selamat Datang!</div>
                 <span class="text-600 font-medium mr-2">Udah punya akun belum?</span>
-                <a class="font-medium no-underline text-blue-500 cursor-pointer hover:underline">Yuk buat!</a>
+                <a class="font-medium no-underline text-blue-500 cursor-pointer hover:underline"
+                    @click="goToRegister">Yuk buat!</a>
             </div>
             <div>
-                <label for="email" class="block text-900 font-medium mb-2">Email</label>
-                <InputText id="email" v-model="context.email" type="text" placeholder="Alamat Email" class="w-full mb-3 p-3" />
-            
-                <label for="password" class="block text-900 font-medium mb-2">Password</label>
-                <InputText id="password" v-model="context.password" type="password" placeholder="Password" class="w-full mb-3 p-3" />
-            
+                <div class="mb-3">
+                    <label for="email" class="block text-900 font-medium mb-2">Email</label>
+                    <InputText id="email" v-model="context.email" type="text" placeholder="Alamat Email"
+                        :invalid="loginFailed" class="w-full" />
+                    <small v-if="loginFailed" class="p-error">
+                        {{ 'Email Anda tidak sesuai.' }}
+                    </small>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="block text-900 font-medium mb-2">Password</label>
+                    <InputText id="name" v-model="context.password" type="password" placeholder="Password"
+                        class="w-full" :invalid="loginFailed" />
+                    <small v-if="loginFailed" class="p-error">
+                        {{ 'Password Anda tidak sesuai.' }}
+                    </small>
+                </div>
                 <div class="flex align-items-center justify-content-between mb-6">
                     <div class="flex align-items-center">
-                        <Checkbox id="rememberme2" :binary="true" v-model="checked2" class="mr-2"></Checkbox>
-                        <label for="rememberme2">Ingat saya</label>
+                        <Checkbox inputId="rememberme" :binary="true" v-model="checked" class="mr-2"></Checkbox>
+                        <label for="rememberme" class="cursor-pointer">Ingat saya</label>
                     </div>
-                    <a class="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer hover:underline">Lupa password?</a>
+                    <a class="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer hover:underline">Lupa
+                        password?</a>
                 </div>
-                <Button label="Masuk" :loading="context.loading['login']" @click="context.login()" icon="pi pi-sign-in" class="w-full p-3"></Button>
+                <Button label="Masuk" :disabled="context.isLoginDisabled" :loading="context.loading['login']"
+                    @click="handleLogin" icon="pi pi-sign-in" class="w-full p-3"></Button>
             </div>
         </div>
-        <div class="hidden md:block w-6 bg-no-repeat bg-cover" style="background-image: url('http://semar.taskhub.id:4444/images/blocks/signin/signin.jpg')"></div>
+        <div class="hidden md:block w-6 bg-no-repeat bg-cover"
+            style="background-image: url('http://semar.taskhub.id:4444/images/blocks/signin/signin.jpg')"></div>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useLoginStore } from '@/stores/login.store';
+import { ref, watch } from 'vue';
+import { useAuthStore } from '@/stores/auth.store';
+import { useRouter } from 'vue-router';
 
-const context = useLoginStore();
+const router = useRouter();
+const context = useAuthStore();
+const checked = ref(false);
+const loginFailed = ref(false);
 
-const checked2 = ref(false);
+const goToRegister = () => {
+    router.push({ name: 'register' });
+};
+
+const handleLogin = async () => {
+    loginFailed.value = false;
+
+    await context.login();
+
+    if (!context.accessToken) {
+        loginFailed.value = true;
+    }
+};
+
+watch([() => context.email, () => context.password], () => {
+    loginFailed.value = false;
+});
 </script>

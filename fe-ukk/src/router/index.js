@@ -6,6 +6,7 @@ import Product from '../views/ProductDetail.vue'
 import Login from '../views/Login.vue'
 import AdminRoles from '../views/AdminRoles.vue'
 import ManageProducts from '../views/ManageProducts.vue'
+import Register from '../views/Register.vue'
 
 const routes = [
   {
@@ -17,6 +18,12 @@ const routes = [
     path: '/login',
     name: 'login',
     component: Login,
+    meta: { hideNavbarFooter: true }
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: Register,
     meta: { hideNavbarFooter: true }
   },
   {

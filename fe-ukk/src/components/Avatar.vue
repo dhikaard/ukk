@@ -50,6 +50,5 @@
     const svgString = avatar.toString();
   
     avatarSvg.value = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgString)))}`;
-    console.log('Received name in Avatar:', props.name);
   });
   </script>
