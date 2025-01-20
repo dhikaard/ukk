@@ -25,22 +25,39 @@ export const useHomeViewStore = defineStore({
         selectedCategory: 0,
         selectedFilters: [],
         rangeValues: [1, 100000],
+        selectedData: null,
+        categoryOptions: [
+            { name: 'New York', code: 'NY' },
+            { name: 'Rome', code: 'RM' },
+            { name: 'London', code: 'LDN' },
+            { name: 'Istanbul', code: 'IST' },
+            { name: 'Paris', code: 'PRS' }
+        ],
+        sortBy: 'name-asc',
+        priceSort: 'low-high',
+        priceOrder: '',
+        
     }),
     actions: {
+        toggleCategory(category) {
+            const index = this.selectedCategory.indexOf(category);
+            if (index === -1) {
+              this.selectedCategory.push(category);
+            } else {
+              this.selectedCategory.splice(index, 1);
+            }
+          },      
+        setSelectedData(data) {
+            this.selectedData = data;
+        },
         async getProducts() {
             this.products = [
                 { id: "1", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "2", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "3", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "4", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "5", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "6", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "7", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "8", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "9", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "10", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "11", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
+                { id: "2", name: "Blue T-Shirt", image: "bamboo-watch.jpg.", price: 35, category: "Clothing", quantity: 14, inventoryStatus: "INSTOCK", rating: 4 },
+                { id: "3", name: "Gaming Mouse", image: "bamboo-watch.jpg", price: 45, category: "Electronics", quantity: 30, inventoryStatus: "INSTOCK", rating: 5 },
+                { id: "4", name: "Leather Wallet", image: "bamboo-watch.jpg", price: 55, category: "Accessories", quantity: 10, inventoryStatus: "INSTOCK", rating: 4 },
             ];
+            this.sortProducts();
             this.totalRecords = this.products.length;
             this.updatePaginatedProducts();
         },
@@ -65,27 +82,24 @@ export const useHomeViewStore = defineStore({
                     offset: this.offset,
                 }
             };
-
             const result = await callApiTask(payload);
             if (result.isOk) {
-                const unmigratedVisitList = result.body.unmigratedVisitList.map((data) => ({
-                    docDate: data.docDate,
-                    noAdmission: data.noAdmission,
-                    startDate: data.startDate,
-                    finishDate: data.finishDate,
-                    patient: data.patient,
-                    rmId: data.rmId,
-                    jnsPelayananName: data.jnsPelayananName,
-                    jnsPembayaranName: data.jnsPembayaranName,
-                    totalBill: data.totalBill,
-                    errorMessage: data.errorMessage,
-                    statusDoc: data.statusDoc
-                }));
-                this.dataTable = unmigratedVisitList;
-                this.countList();
                 this.loading['table'] = false;
-                return unmigratedVisitList;
             }
         },
+        sortProducts() {
+            if (this.sortBy === 'name-asc') {
+                this.products.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (this.sortBy === 'name-desc') {
+                this.products.sort((a, b) => b.name.localeCompare(a.name));
+            }
+            
+            if (this.priceSort === 'low-high') {
+                this.products.sort((a, b) => a.price - b.price);
+            } else if (this.priceSort === 'high-low') {
+                this.products.sort((a, b) => b.price - a.price);
+            }
+            this.updatePaginatedProducts();
+        }
     }
 });

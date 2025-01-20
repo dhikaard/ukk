@@ -1,6 +1,6 @@
 <template>
     <div class="surface-100 bottom-0 px-4 py-5 md:px-6 lg:px-8 text-center">
-        <img src="/public/logo.webp" alt="Logo" class="border-circle h-4rem">
+        <img src=" /logo.webp" alt="Logo" class="border-circle h-4rem">
         <div class="font-medium text-900 mt-4 mb-3">
             &copy;{{ currentYear }} Amfibi Outdoor
         </div>

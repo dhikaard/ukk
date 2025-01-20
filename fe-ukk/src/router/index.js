@@ -4,6 +4,7 @@ import History from '../views/HistoryView.vue'
 import NotFound from '../views/NotFoundView.vue'
 import TermsView from '../views/TermsView.vue'
 import Login from '@/views/Login.vue'
+import DetailProduct from '@/views/DetailProduct.vue'
 
 const routes = [
   {
@@ -33,6 +34,11 @@ const routes = [
     path: '/terms',
     name: 'terms',
     component: TermsView
+  },
+  {
+    path: '/product/:id',
+    name: 'detailProduct',
+    component: DetailProduct
   },
   {
     path: '/:pathMatch(.*)*',

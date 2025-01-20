@@ -1,5 +1,5 @@
 <template>
-    <div class="surface-card px-2 py-7 md:px-5 shadow-2 border-round">
+    <div class="surface-card px-2 py-7 md:px-5 shadow-2 ">
         <div class="">
             <div class="text-900 font-bold text-3xl text-center">
                 Informasi & Petunjuk
@@ -11,11 +11,11 @@
             </div>
         </div>
         <TabView>
-            <TabPanel header="Ketentuan" class="border-round-lg" >
+            <TabPanel header="Ketentuan" class="" >
                 <div class="grid">
                     <p class="font-bold text-xl">Berikut adalah ketentuan dari sistem rental kami :</p>
                     <div v-for="(rule, index) in rentalRules" :key="index" class="col-12">
-                        <div class="flex align-items-start gap-3 p-3 surface-100 border-round">
+                        <div class="flex align-items-start gap-3 p-3 surface-100">
                             <span class="text-lg">{{ index + 1 }}.</span>
                             <span class="text-lg">{{ rule.text }}</span>
                         </div>
@@ -26,12 +26,13 @@
                 <p class="font-bold text-xl">Berikut adalah jam operasional dari toko kami :</p>
                 <div class="grid">
                     <div v-for="(day, index) in operatingHours" :key="index" class="col-12 md:col-6">
-                        <div class="flex justify-content-between align-items-center p-2 border-round bg-gray-100">
+                        <div class="flex justify-content-between align-items-center p-2 border-round-lg surface-100">
                             <span class="font-medium text-lg">{{ day.day }}</span>
                             <span class="text-sm">{{ day.hours }}</span>
                         </div>
                     </div>
                 </div>
+                <p class="text-white">NB: Jadwal dapat berubah tanpa pemberitahuan terlebih dahulu.</p>
             </TabPanel>
         </TabView>
     </div>

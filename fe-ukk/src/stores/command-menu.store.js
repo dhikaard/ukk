@@ -7,10 +7,10 @@ export const useCommandMenuStore = defineStore('command-menu.store', {
     isDarkMode: false,
     articles: [
       { name: 'Sewa Barang', description: 'Cari barang untuk disewa', iconClass: 'pi pi-home', route: 'home', iconEnd:'Ctrl + S' },
-      { name: 'Riwayat Sewa', description: 'Lihat riwayat barang', iconClass: 'bi bi-receipt-cutoff', route: 'history', iconEnd:'Ctrl + H' },
+      { name: 'Riwayat Sewa', description: 'Lihat riwayat barang', iconClass: 'pi pi-receipt', route: 'history', iconEnd:'Ctrl + H' },
       { name: 'Pengaturan', description: 'Ubah data pribadi', iconClass: 'pi pi-cog', route: 'settings', iconEnd:'Ctrl + S' },
       { name: 'Ketentuan', description: 'Lihat ketentuan layanan', iconClass: 'pi pi-info-circle', route: 'terms', iconEnd:'Ctrl + T' },
-      { name: 'Tema', description: 'Ubah tema tampilan aplikasi', iconClass: 'pi pi-palette', action: 'switchTheme', iconEnd:'' }
+      { name: 'Tema', description: 'Ubah tema tampilan aplikasi', iconClass: 'pi pi-palette', action: 'switchTheme'}
     ],
     router: useRouter()
   }),

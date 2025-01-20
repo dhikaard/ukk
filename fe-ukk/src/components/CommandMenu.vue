@@ -21,6 +21,9 @@
                         </IconField>
                     </div>
             </section>
+            <div v-if="filteredArticles.length === 0" class="p-3 text-center text-500">
+              <p>Tidak ada hasil untuk "{{ search }}"</p>
+            </div>
             <article v-for="article in filteredArticles" :key="article.name"
                 class="flex w-full justify-content-between align-items-center select-none cursor-pointer surface-border hover:surface-hover border-round-lg px-2 py-2 text-800 hover:text-primary "
                 @click="handleArticleClick(article)">
@@ -62,7 +65,6 @@ function handleArticleClick(article) {
     context.navigateTo(article.route);
   }
 }
-
 
 function handleKeyDown(event) {
   if (event.ctrlKey) {
