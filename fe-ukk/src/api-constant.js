@@ -4,4 +4,9 @@ export const ApiConstant = {
         method: 'POST',
         keyList: ''
     },
+    REGISTER: {
+        path: 'register',
+        method: 'POST',
+        keyList: ''
+    },
 };
