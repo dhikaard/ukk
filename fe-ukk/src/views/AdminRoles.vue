@@ -2,7 +2,12 @@
     <div class="surface-section px-4 pt-8 md:px-6 lg:px-8">
         <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4">
             <div class="flex flex-column text-center md:text-left">
-                <span class="text-900 text-3xl font-medium mb-2">Anggota Tim</span>
+                <div class="flex align-items-center justify-content-center md:justify-content-start mb-2">
+                    <span
+                        class="border-circle w-3rem h-3rem flex align-items-center justify-content-center surface-100 mr-2">
+                        <i class="pi pi-users text-900 text-3xl"></i>
+                    </span> <span class="text-900 text-3xl font-medium">Anggota Tim</span>
+                </div>
                 <span class="text-600 text-xl">Kamu dapat dengan mudah mengelola tim di halaman ini!😎</span>
             </div>
             <span class="p-input-icon-right mt-5 mb-2 md:mt-0 md:mb-0 w-full lg:w-25rem">
