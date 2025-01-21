@@ -11,12 +11,7 @@ class RolesPermissions extends Seeder
      * Run the database seeds.
      */
     public function run(): void {
-        DB::table('roles')->insert([
-            [
-                'role_name' => 'OWNER',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+        DB::table('role')->insert([
             [
                 'role_name' => 'ADMIN',
                 'created_at' => now(),
@@ -29,25 +24,5 @@ class RolesPermissions extends Seeder
             ],
         ]);
 
-        DB::table('permissions')->insert([
-            [
-                'role_id' => 1,
-                'permission_name' => 'manageAdmin',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'role_id' => 2,
-                'permission_name' => 'manageProduct',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'role_id' => 3,
-                'permission_name' => '',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-        ]);
     }
 }

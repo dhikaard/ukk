@@ -54,7 +54,7 @@
         <!-- Dropdown Urutkan -->
         <div class="col-6">
           <FloatLabel class="w-full">
-            <Dropdown v-model="context.priceOrder" :options="['A-Z', 'Z-A', 'Terbaru', 'Termurah ke Termahal', 'Termahal ke Termurah']" placeholder="Urutkan" class="w-full" showClear/>
+            <Dropdown v-model="context.priceOrder" :options="context.priceOrderOptions" optionLabel="name" placeholder="Urutkan" class="w-full" showClear/>
             <label for="priceOrder" class=" -ml-1 text-sm">Urutkan Berdasarkan</label>
           </FloatLabel>
         </div>

@@ -35,7 +35,14 @@ export const useHomeViewStore = defineStore({
         ],
         sortBy: 'name-asc',
         priceSort: 'low-high',
-        priceOrder: '',
+        priceOrder: null,
+        priceOrderOptions: [
+            {name: 'A-Z', code : 'ASC'},
+            {name: 'Z-A', code : 'DESC'},
+            {name: 'Terbaru', code : 'create_datetime DESC'},
+            {name: 'Termurah ke Termahal', code : 'amount ASC'},
+            {name: 'Termahal ke Termurah', code : 'amount DESC'}
+        ]
         
     }),
     actions: {
