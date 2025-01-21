@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('user_code', 100)->default('');
             $table->bigInteger('role_id')->default(-99);
             $table->string('address', 256)->default('');
             $table->string('phone', 20)->default('');
@@ -26,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['user_code', 'role_id', 'address', 'phone', 'active']);
+            $table->dropColumn(['roles_id', 'address', 'phone', 'active']);
         });
     }
 };
