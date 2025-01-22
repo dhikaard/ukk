@@ -30,6 +30,17 @@
                     <li class="mb-2" v-if="hasAccess('manageProduct') || hasAccess('manageAdmin')">
                         <a v-ripple
                             class="flex p-2 align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
+                            @click="goToBrandCtgr">
+                            <i class="bi bi-boxes text-500 mr-3 text-xl"></i>
+                            <span>
+                                <span class="block text-700 font-medium">Merk & Kategori</span>
+                                <p class="mt-1 mb-0 text-600 text-sm">Kelola merk dan kategori barang</p>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="mb-2" v-if="hasAccess('manageProduct') || hasAccess('manageAdmin')">
+                        <a v-ripple
+                            class="flex p-2 align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
                             @click="goToProduct">
                             <i class="bi bi-box-seam text-500 mr-3 text-xl"></i>
                             <span>
@@ -84,7 +95,7 @@
 import { ref, onMounted } from 'vue';
 import Avatar from './Avatar.vue';
 import { useRouter } from 'vue-router';
-import local from '../utils/local-storage';
+import local from '@/utils/local-storage';
 import helper from '@/utils/helper'
 
 const hasAccess = helper.methods.hasAccess;
@@ -99,11 +110,19 @@ const goToAdminRoles = () => {
     }
 };
 
+
+const goToBrandCtgr = () => {
+    if (hasAccess('manageProduct') || hasAccess('manageAdmin')) {
+        router.push({ name: 'manageBrandCtgr' });
+    }
+};
+
 const goToProduct = () => {
     if (hasAccess('manageProduct') || hasAccess('manageAdmin')) {
         router.push({ name: 'manageProducts' });
     }
 };
+
 
 const goToTransaction = () => {
     if (hasAccess('manageProduct') || hasAccess('manageAdmin')) {

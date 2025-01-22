@@ -13,17 +13,17 @@ class RolesPermissions extends Seeder
     public function run(): void {
         DB::table('roles')->insert([
             [
-                'role_name' => 'OWNER',
+                'role_name' => 'Owner',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'role_name' => 'ADMIN',
+                'role_name' => 'Administrator',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'role_name' => 'USER',
+                'role_name' => 'Pengguna',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

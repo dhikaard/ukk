@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:visible="context.visible" :modal="true" :closable="true" :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
+    <Dialog v-model="context.visible" :modal="true" :closable="true" :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
         :style="{ width: '55vw', maxWidth: '90vw', minWidth: '380px' }">
         <template #header>
             <div class="flex w-full justify-content-between align-items-center">
@@ -20,11 +20,14 @@
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="city" class="font-medium text-900">Merk</label>
-                    <InputText v-model="context.brandName" id="city" type="text" placeholder="Canon" />
+                    <Dropdown v-model="context.brandId" editable :options="context.brandOptions" optionLabel="brandName"
+                        optionValue="id" placeholder="Canon" emptyMessage="Tidak ada opsi yang tersedia" />
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="state" class="font-medium text-900">Kategori</label>
-                    <InputText v-model="context.ctgrName" id="state" type="text" placeholder="Kamera" />
+                    <Dropdown v-model="context.ctgrId" editable :options="context.ctgrOptions" optionLabel="ctgrName"
+                        optionValue="id" placeholder="Kamera" emptyMessage="Tidak ada opsi yang tersedia" />
+
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="city" class="font-medium text-900">Stok</label>
@@ -50,7 +53,7 @@
                     </InputNumber>
                 </div>
                 <div class="field mb-4 col-12">
-                    <label for="bio" class="font-medium text-900">Deskripsi</label>
+                    <label for="bio" class="font-medium text-900">Keterangan</label>
                     <Editor v-model="context.desc" editorStyle="height: 200px">
                         <template v-slot:toolbar>
                             <span class="ql-formats">
@@ -62,10 +65,10 @@
                     </Editor>
                 </div>
                 <div class="field mb-4 col-12">
-                    <label for="thumbnail" class="font-medium text-900">Foto</label>
+                    <label for="thumbnail" class="font-medium text-900">Foto Barang</label>
                     <div class="align-items-center">
-                        <FileUpload :showUploadButton="false" chooseLabel="Pilih" cancelLabel="Batal" name="demo[]" @select="onFileSelect"
-                            :multiple="false" accept="image/*" :maxFileSize="1000000">
+                        <FileUpload :showUploadButton="false" chooseLabel="Pilih" cancelLabel="Batal" name="demo[]"
+                            @select="onFileSelect" :multiple="false" accept="image/*" :maxFileSize="1000000">
                             <template #empty>
                                 <p>Seret dan taruh file ke sini untuk mengunggah.</p>
                             </template>
@@ -78,19 +81,25 @@
             <div class="pt-2 flex border-top-1 surface-border gap-2 w-full">
                 <Button icon="pi pi-times" @click="$emit('update:visible', false)" label="Batal"
                     class="p-button-text w-full p-button-secondary"></Button>
-                <Button :loading="context.loading['addProduct']" icon="pi pi-check" @click="handleAddProduct" label="Selesai"
-                    class="w-full p-button-primary"></Button>
+                <Button :loading="context.loading['addProduct']" icon="pi pi-check" @click="handleAddProduct"
+                    label="Selesai" class="w-full p-button-primary"></Button>
             </div>
         </template>
     </Dialog>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useManageProductStore } from '@/stores/manage-product.store';
 
 const context = useManageProductStore();
 const selectedFiles = ref([]);
+const emit = defineEmits();
+
+onMounted(async () => {
+    await context.getBrand();
+    await context.getCtgr();
+})
 
 const onFileSelect = (event) => {
     selectedFiles.value = event.files;
@@ -99,10 +108,31 @@ const onFileSelect = (event) => {
 const handleAddProduct = async () => {
     const formData = new FormData();
     formData.append('productName', context.productName);
-    formData.append('brandId', context.brandId);
-    formData.append('brandName', context.brandName);
-    formData.append('ctgrId', context.ctgrId);
-    formData.append('ctgrName', context.ctgrName);
+
+    // Logika untuk brandId dan brandName
+    const selectedBrand = context.brandOptions.find((brand) => brand.id === context.brandId);
+    if (selectedBrand) {
+        // Jika brandId valid dari dropdown
+        formData.append('brandId', selectedBrand.id);
+        formData.append('brandName', selectedBrand.brandName);
+    } else {
+        // Jika input manual (brandId tidak ditemukan)
+        formData.append('brandId', -99);
+        formData.append('brandName', context.brandId); // Brand input manual masuk ke v-model brandId
+    }
+
+    // Logika untuk ctgrId dan ctgrName
+    const selectedCategory = context.ctgrOptions.find((ctgr) => ctgr.id === context.ctgrId);
+    if (selectedCategory) {
+        // Jika ctgrId valid dari dropdown
+        formData.append('ctgrId', selectedCategory.id);
+        formData.append('ctgrName', selectedCategory.ctgrName);
+    } else {
+        // Jika input manual (ctgrId tidak ditemukan)
+        formData.append('ctgrId', -99);
+        formData.append('ctgrName', context.ctgrId); // Category input manual masuk ke v-model ctgrId
+    }
+
     formData.append('stock', context.stock);
     formData.append('price', context.price);
     formData.append('fineBill', context.fineBill);
@@ -112,7 +142,20 @@ const handleAddProduct = async () => {
         formData.append('urlImg', file);
     });
 
+    console.log('FormData:', {
+        productName: formData.get('productName'),
+        brandId: formData.get('brandId'),
+        brandName: formData.get('brandName'),
+        ctgrId: formData.get('ctgrId'),
+        ctgrName: formData.get('ctgrName'),
+    });
+
     await context.addProduct(formData);
+
+    if (!context.loading['addProduct']) {
+        emit('update:visible', false);  // Use `emit` here instead of `$emit`
+    }
 };
+
 
 </script>
