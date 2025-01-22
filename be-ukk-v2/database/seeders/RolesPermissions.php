@@ -11,7 +11,7 @@ class RolesPermissions extends Seeder
      * Run the database seeds.
      */
     public function run(): void {
-        DB::table('role')->insert([
+        DB::table('roles')->insert([
             [
                 'role_name' => 'ADMIN',
                 'created_at' => now(),
