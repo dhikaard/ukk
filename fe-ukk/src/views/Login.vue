@@ -7,7 +7,7 @@
                     <span class="philosopher-regular text-2xl">AW KAMERA</span>
                 </div>
                 <div class="text-900 text-3xl font-medium mb-3">Selamat Datang!</div>
-                <span class="text-600 font-medium mr-2">Udah punya akun belum?</span>
+                <span class="text-600 font-medium mr-2">Belum punya akun?</span>
                 <a class="font-medium no-underline text-blue-500 cursor-pointer hover:underline"
                     @click="goToRegister">Yuk buat!</a>
             </div>

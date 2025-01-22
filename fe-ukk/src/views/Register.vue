@@ -45,7 +45,7 @@
                             class="w-full no-spinner" />
                     </div>
                 </div>
-                <Button label="Masuk" :loading="context.loading['regist']" @click="register" icon="pi pi-sign-in"
+                <Button label="Daftar" :loading="context.loading['regist']" @click="register" icon="pi pi-sign-in"
                     class="w-full mt-3 p-3" :disabled="context.isRegisterDisabled"></Button>
             </div>
         </div>

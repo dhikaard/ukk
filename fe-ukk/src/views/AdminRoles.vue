@@ -13,7 +13,8 @@
             <span class="p-input-icon-right mt-5 mb-2 md:mt-0 md:mb-0 w-full lg:w-25rem">
                 <IconField iconPosition="left">
                     <InputIcon class="pi pi-search"> </InputIcon>
-                    <InputText v-model="value1" placeholder="Nama Lengkap" class="w-full" />
+                    <InputText v-model="context.keyword" placeholder="Nama Lengkap" class="w-full"
+                        @keyup.enter="context.getManageAdmin" />
                 </IconField>
             </span>
         </div>
@@ -29,17 +30,36 @@
                     @click="showDialogInvite = true"></Button>
             </div>
             <div class="mt-3">
-                <DataTable :value="members" :tabStyle="{ 'min-width': '60rem' }" rowHover>
+                <DataTable :value="context.dataTableAdmin" :tabStyle="{ 'min-width': '60rem' }" rowHover>
+                    <template #empty>
+                        <p class="text-center w-full">Data tidak tersedia</p>
+                    </template>
                     <Column style="min-width:25rem">
                         <template #header>
-                            <span class="font-semibold text-sm text-color-secondary">Nama Lengkap</span>
+                            <span class="font-semibold text-sm text-color-secondary">Nama Lengkap / Email</span>
                         </template>
                         <template #body="{ data }">
-                            <div class="flex align-items-center gap-3">
+                            <Skeleton v-if="context.loading['getAdmin']" height="2rem"></Skeleton>
+                            <div v-else class="flex align-items-center gap-3">
                                 <Avatar :name="data.name" alt="User Avatar" style="height: 2.5rem;" />
                                 <div>
                                     <p class="mt-0 mb-2 font-medium text-lg text-color-primary">{{ data.name }}</p>
-                                    <p class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.username }}
+                                    <p class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.email }}
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+                    </Column>
+                    <Column style="min-width:20rem">
+                        <template #header>
+                            <span class="font-semibold text-sm text-color-secondary">Alamat / Telepon</span>
+                        </template>
+                        <template #body="{ data }">
+                            <Skeleton v-if="context.loading['getAdmin']" height="2rem"></Skeleton>
+                            <div v-else class="flex align-items-center gap-3">
+                                <div>
+                                    <p class="mt-0 mb-2 font-medium text-lg text-color-primary">{{ data.address }}</p>
+                                    <p class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.phone }}
                                     </p>
                                 </div>
                             </div>
@@ -50,21 +70,26 @@
                             <span class="font-semibold text-sm text-color-secondary">Tanggal Bergabung</span>
                         </template>
                         <template #body="{ data }">
-                            <p class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.date }}</p>
+                            <Skeleton v-if="context.loading['getAdmin']" height="2rem"></Skeleton>
+                            <p v-else class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.updatedAt }}
+                            </p>
                         </template>
                     </Column>
                     <Column style="min-width:13rem">
                         <template #header>
-                            <span class="font-semibold text-sm text-color-secondary">Terakhir Aktif</span>
+                            <span class="font-semibold text-sm text-color-secondary">Peran</span>
                         </template>
                         <template #body="{ data }">
-                            <p class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.active }}</p>
+                            <Skeleton v-if="context.loading['getAdmin']" height="2rem"></Skeleton>
+                            <p v-else class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.roleName }}
+                            </p>
                         </template>
                     </Column>
                     <Column style="min-width:8rem">
-                        <template #body>
-                            <Button type="button" icon="pi pi-ellipsis-v" class="p-button-text p-button-secondary"
-                                @click="$refs.menu.toggle($event)"></Button>
+                        <template #body="{}">
+                            <Skeleton v-if="context.loading['getAdmin']" height="2rem"></Skeleton>
+                            <Button v-else type="button" icon="pi pi-ellipsis-v"
+                                class="p-button-text p-button-secondary" @click="$refs.menu.toggle($event)"></Button>
                             <Menu ref="menu" appendTo="body" popup :model="items"></Menu>
                         </template>
                     </Column>
@@ -82,25 +107,24 @@
                     @click="showDialogAddRoles = true"></Button>
             </div>
             <div class="mt-3">
-                <DataTable :value="roles" rowHover>
+                <DataTable :value="context.dataTableRoles" rowHover>
                     <Column style="min-width:25rem">
                         <template #header>
                             <span class="font-semibold text-sm text-color-secondary">Nama Peran</span>
                         </template>
                         <template #body="{ data }">
-                            <div class="flex align-items-center">
-                                <span class="border-circle mr-2" :class="data.color"
-                                    style="width: 7px; height: 7px;"></span>
-                                <p class="mt-0 mb-0 font-medium text-lg text-color-primary">{{ data.alias }}</p>
-                            </div>
+                            <Skeleton v-if="context.loading['getRole']" height="2rem"></Skeleton>
+                            <p v-else class="mt-0 mb-0 font-medium text-lg text-color-primary">{{ data.roleName }}</p>
                         </template>
                     </Column>
-                    <Column style="min-width:14rem">
+                    <Column style="min-width:13rem">
                         <template #header>
-                            <span class="font-semibold text-sm text-color-secondary">Terakhir Diubah</span>
+                            <span class="font-semibold text-sm text-color-secondary">Izin</span>
                         </template>
                         <template #body="{ data }">
-                            <p class="mt-0 mb-0 font-normal text-base text-color-secondary">{{ data.date }}</p>
+                            <Skeleton v-if="context.loading['getRole']" height="2rem"></Skeleton>
+                            <p v-else class="mt-0 mb-0 font-normal text-base text-color-secondary">{{
+                                data.permissionName }}</p>
                         </template>
                     </Column>
                     <Column style="min-width:13rem">
@@ -108,13 +132,26 @@
                             <span class="font-semibold text-sm text-color-secondary">Pengguna</span>
                         </template>
                         <template #body="{ data }">
-                            <p class="mt-0 mb-0 font-normal text-base text-color-secondary">{{ data.users }}</p>
+                            <Skeleton v-if="context.loading['getRole']" height="2rem"></Skeleton>
+                            <p v-else class="mt-0 mb-0 font-normal text-base text-color-secondary">{{ data.userCount }}
+                            </p>
+                        </template>
+                    </Column>
+                    <Column style="min-width:14rem">
+                        <template #header>
+                            <span class="font-semibold text-sm text-color-secondary">Terakhir Diubah</span>
+                        </template>
+                        <template #body="{ data }">
+                            <Skeleton v-if="context.loading['getRole']" height="2rem"></Skeleton>
+                            <p v-else class="mt-0 mb-0 font-normal text-base text-color-secondary">{{ data.updatedAt }}
+                            </p>
                         </template>
                     </Column>
                     <Column style="min-width:8rem">
                         <template #body>
-                            <Button type="button" icon="pi pi-ellipsis-v" class="p-button-text p-button-secondary"
-                                @click="$refs.menu.toggle($event)"></Button>
+                            <Skeleton v-if="context.loading['getRole']" height="2rem"></Skeleton>
+                            <Button v-else type="button" icon="pi pi-ellipsis-v"
+                                class="p-button-text p-button-secondary" @click="$refs.menu.toggle($event)"></Button>
                             <Menu ref="menu" appendTo="body" popup :model="items"></Menu>
                         </template>
                     </Column>
@@ -127,65 +164,18 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, ref } from 'vue';
+import { defineAsyncComponent, ref, onMounted } from 'vue';
+import { useManageAdminStore } from '@/stores/manage-admin.store';
 import Avatar from '../components/Avatar.vue';
 
+const context = useManageAdminStore();
 const DialogInviteAdmin = defineAsyncComponent(() => import('../components/DialogInviteAdmin.vue'));
 const DialogAddRoles = defineAsyncComponent(() => import('../components/DialogAddRoles.vue'));
 const showDialogInvite = ref(false);
 const showDialogAddRoles = ref(false);
 
-const members = ref([
-    {
-        name: 'Alexander Agung',
-        username: '@alexander',
-        date: '2023-01-15',
-        active: '2023-12-20',
-    },
-    {
-        name: 'Maria Clara',
-        username: '@maria',
-        date: '2022-10-10',
-        active: '2023-12-18',
-    },
-    {
-        name: 'John Doe',
-        username: '@johndoe',
-        date: '2021-07-23',
-        active: '2023-12-15',
-    },
-    {
-        name: 'Jane Smith',
-        username: '@janesmith',
-        date: '2020-05-30',
-        active: '2023-12-12',
-    },
-]);
-
-const roles = ref([
-    {
-        alias: 'Administrator',
-        color: 'bg-blue-500',
-        date: '2023-11-10',
-        users: 5,
-    },
-    {
-        alias: 'Editor',
-        color: 'bg-green-500',
-        date: '2023-10-05',
-        users: 8,
-    },
-    {
-        alias: 'Viewer',
-        color: 'bg-orange-500',
-        date: '2023-09-12',
-        users: 20,
-    },
-    {
-        alias: 'Moderator',
-        color: 'bg-purple-500',
-        date: '2023-12-01',
-        users: 3,
-    },
-]);
+onMounted(async () => {
+    await context.getManageAdmin();
+    await context.getRolePermission();
+})
 </script>

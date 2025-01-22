@@ -16,7 +16,7 @@
                 </a>
                 <div class="border-top-1 surface-border my-3" style="height:1px"></div>
                 <ul id="pb_profile_submenu" class="list-none p-0 m-0 overflow-hidden">
-                    <li class="mb-2">
+                    <li class="mb-2" v-if="hasAccess('manageAdmin')">
                         <a v-ripple
                             class="flex p-2 align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
                             @click="goToAdminRoles">
@@ -27,7 +27,7 @@
                             </span>
                         </a>
                     </li>
-                    <li class="mb-2">
+                    <li class="mb-2" v-if="hasAccess('manageProduct') || hasAccess('manageAdmin')">
                         <a v-ripple
                             class="flex p-2 align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
                             @click="goToProduct">
@@ -38,7 +38,7 @@
                             </span>
                         </a>
                     </li>
-                    <li class="mb-2">
+                    <li class="mb-2" v-if="hasAccess('manageProduct') || hasAccess('manageAdmin')">
                         <a v-ripple
                             class="flex p-2 align-items-center hover:surface-50 border-transparent border-1 hover:border-100 border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
                             @click="goToTransaction">
@@ -85,22 +85,30 @@ import { ref, onMounted } from 'vue';
 import Avatar from './Avatar.vue';
 import { useRouter } from 'vue-router';
 import local from '../utils/local-storage';
+import helper from '@/utils/helper'
 
+const hasAccess = helper.methods.hasAccess;
 const router = useRouter();
 
 const userName = ref('Tamu');
 const userRole = ref('Pengunjung');
 
 const goToAdminRoles = () => {
-    router.push({ name: 'adminRoles' });
+    if (hasAccess('manageAdmin')) {
+        router.push({ name: 'adminRoles' });
+    }
 };
 
 const goToProduct = () => {
-    router.push({ name: 'manageProducts' });
+    if (hasAccess('manageProduct') || hasAccess('manageAdmin')) {
+        router.push({ name: 'manageProducts' });
+    }
 };
 
 const goToTransaction = () => {
-    router.push({ name: 'manageTransactions' });
+    if (hasAccess('manageProduct') || hasAccess('manageAdmin')) {
+        router.push({ name: 'manageTransactions' });
+    }
 };
 
 const logout = () => {

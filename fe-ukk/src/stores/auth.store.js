@@ -16,6 +16,7 @@ export const useAuthStore = defineStore({
     address: '',
     phone: '',
     accessToken: '',
+    permissions: [],
     router: useRouter(),
     loading: {},
   }),
@@ -32,6 +33,7 @@ export const useAuthStore = defineStore({
       const result = await callApi(payload);
       if (result.isOk) {
         this.accessToken = result.body.access_token;
+        this.permissions = result.body.permissions;
         const user = result.body.user.map((data) => ({
           id: data.user_id,
           userCode: data.user_code,
@@ -44,6 +46,7 @@ export const useAuthStore = defineStore({
         }));
         local.set('token', this.accessToken);
         local.set('user', JSON.stringify(user));
+        local.set('permissions', JSON.stringify(this.permissions));
         
         this.router.push({ name: 'home' });
         this.loading['login'] = false;
