@@ -15,17 +15,18 @@ class ManageAdminController extends Controller
 {
     public function addUserAdmin(AddAdmin $request)
     {
-
         $adminRoleId = DB::table('roles')->where('role_name', 'Administrator')->value('role_id');
 
-        $newUser = User::create([
+        $newUser = DB::table('users')->insertGetId([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role_id' => $adminRoleId,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        return response()->json($newUser, 201);
+        return response()->json(['user_id' => $newUser], 201);
     }
 
     public function editUserAdmin(EditAdmin $request)
@@ -36,11 +37,11 @@ class ManageAdminController extends Controller
             return response()->json(['error' => 'Anda bukan Owner'], 403);
         }
 
-        $existingUser = User::findOrFail($request->user_id);
+        DB::table('users')
+            ->where('user_id', $request->user_id)
+            ->update(['role_id' => $request->role_id, 'updated_at' => now()]);
 
-        $existingUser->update([
-            'role_id' => $request->role_id,
-        ]);
+        $existingUser = DB::table('users')->where('user_id', $request->user_id)->first();
 
         return response()->json($existingUser, 200);
     }
@@ -61,6 +62,7 @@ class ManageAdminController extends Controller
 
         return response()->json(['users' => $users], 200);
     }
+
     public function getRolePermission(Request $request)
     {
         $roles = DB::table('roles as A')
@@ -75,13 +77,14 @@ class ManageAdminController extends Controller
                     ELSE COALESCE(GROUP_CONCAT(B.permission_name, ', '), '')
                 END as permission_name
             "),
-            DB::raw("COUNT(C.user_id) as user_count")
+                DB::raw("COUNT(C.user_id) as user_count")
             )
             ->groupBy('A.role_id', 'A.role_name')
             ->get();
 
         return response()->json(['roles' => $roles], 200);
     }
+
     public function getUserForAddAdmin(Request $request)
     {
         $users = DB::table('users as A')

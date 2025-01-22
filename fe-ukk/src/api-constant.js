@@ -29,4 +29,19 @@ export const ApiConstant = {
         method: 'POST',
         keyList: ''
     },
+    GET_PRODUCTS: {
+        path: 'getProducts',
+        method: 'POST',
+        keyList: ''
+    },
+    GET_BRAND_FOR_ADD_PRODUCT: {
+        path: 'getBrandForAddProduct',
+        method: 'GET',
+        keyList: ''
+    },
+    GET_CTGR_FOR_ADD_PRODUCT: {
+        path: 'getCtgrForAddProduct',
+        method: 'GET',
+        keyList: ''
+    },
 };

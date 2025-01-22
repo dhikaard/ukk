@@ -38,11 +38,8 @@ class AuthController extends Controller
             ->where('A.user_id', $userId)
             ->first();
 
-        return response()->json([
-            'user' => [$userWithRole],
-        ]);
+        return response()->json(['user' => [$userWithRole]]);
     }
-
 
     /**
      * Login a user.

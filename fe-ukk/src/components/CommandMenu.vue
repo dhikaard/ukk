@@ -34,6 +34,7 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import local from '@/utils/local-storage';
 
 const router = useRouter();
 const isDarkMode = ref(false);
@@ -51,9 +52,15 @@ const articles = computed(() => {
             iconClass: isDarkMode.value ? 'pi pi-sun' : 'pi pi-moon',
             onClick: switchTheme
         },
-        { name: 'Keluar', description: 'Akhiri sesi', iconClass: 'pi pi-sign-out', onClick: () => router.push({ name: 'login' }) }
+        { name: 'Keluar', description: 'Akhiri sesi', iconClass: 'pi pi-sign-out', onClick: logout }
     ];
 });
+
+const logout = () => {
+    local.remove('token');
+    local.remove('user');
+    router.push({ name: 'login' });
+};
 
 const filteredArticles = computed(() => {
     return articles.value.filter(article =>
@@ -71,11 +78,11 @@ function switchTheme() {
     if (isDarkMode.value) {
         themeLink.href = 'https://cdn.jsdelivr.net/npm/primevue/resources/themes/aura-dark-blue/theme.css';
         primeflexLink.href = 'https://cdn.jsdelivr.net/npm/primeflex/themes/primeone-dark.css';
-        localStorage.setItem('theme', 'dark'); 
+        local.set('theme', 'dark'); 
     } else {
         themeLink.href = 'https://cdn.jsdelivr.net/npm/primevue/resources/themes/aura-light-blue/theme.css';
         primeflexLink.href = 'https://cdn.jsdelivr.net/npm/primeflex/themes/primeone-light.css';
-        localStorage.setItem('theme', 'light');
+        local.set('theme', 'light');
     }
 }
 

@@ -9,6 +9,7 @@ import AdminRoles from '../views/AdminRoles.vue'
 import ManageProducts from '../views/ManageProducts.vue'
 import Register from '../views/Register.vue'
 import ManageTransactions from '@/views/ManageTransactions.vue'
+import ManageBrandCtgr from '@/views/ManageBrandCtgr.vue'
 
 const routes = [
   {
@@ -63,6 +64,14 @@ const routes = [
     }
   },
   {
+    path: '/manage-brand-categories',
+    name: 'manageBrandCtgr',
+    component: ManageBrandCtgr,
+    meta: {
+      taskNames: [],
+    }
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'notFound',
     component: NotFound,
@@ -76,7 +85,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const permissions = JSON.parse(local.get('permissions'));
+  const permissions = JSON.parse(local.get('permissions')) || [];
   const requiredTasks = to.meta.taskNames || [];
 
   if (requiredTasks.length > 0 && permissions) {

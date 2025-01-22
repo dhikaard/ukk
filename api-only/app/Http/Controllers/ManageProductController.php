@@ -3,13 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AddProductRequest;
-use App\Models\Product;
-use App\Models\ProductBrand;
-use App\Models\CtgrProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ManageProductController extends Controller
 {
@@ -18,27 +15,27 @@ class ManageProductController extends Controller
         $data = $request->validated();
 
         if ($data['brandId'] == -99) {
-            $brand = ProductBrand::create(['brand_name' => $data['brandName'], 'active' => 'Y']);
-            $data['product_brand_id'] = $brand->id;
+            $brand = DB::table('product_brand')->insertGetId(['brand_name' => $data['brandName'], 'active' => 'Y']);
+            $data['product_brand_id'] = $brand;
         } else {
             $data['product_brand_id'] = $data['brandId'];
         }
 
         if ($data['ctgrId'] == -99) {
-            $category = CtgrProduct::create(['ctgr_product_name' => $data['ctgrName']]);
-            $data['ctgr_product_id'] = $category->id;
+            $category = DB::table('ctgr_products')->insertGetId(['ctgr_product_name' => $data['ctgrName']]);
+            $data['ctgr_product_id'] = $category;
         } else {
             $data['ctgr_product_id'] = $data['ctgrId'];
         }
 
         if ($request->hasFile('urlImg')) {
-            $path = $request->file('urlImg')->store('public/images');
-            $data['url_img'] = Storage::url($path);
+            $path = $request->file('urlImg')->store('images', 'public');
+            $data['url_img'] = asset('storage/' . $path);
         } else {
             $data['url_img'] = '';
         }
 
-        $product = Product::create([
+        $product = DB::table('products')->insertGetId([
             'product_code' => Str::uuid()->toString(15),
             'product_name' => $data['productName'],
             'ctgr_product_id' => $data['ctgr_product_id'],
@@ -48,9 +45,46 @@ class ManageProductController extends Controller
             'price' => $data['price'],
             'fine_bill' => $data['fineBill'],
             'url_img' => $data['url_img'],
-            'active' => 'Y'
+            'active' => 'Y',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return response()->json(['product' => [$product]], 200);
+    }
+
+    public function getProducts(Request $request)
+    {
+        $keyword = $request->input('keyword');
+
+        $products = DB::table('products as P')
+            ->join('product_brand as B', 'P.product_brand_id', '=', 'B.product_brand_id')
+            ->join('ctgr_products as C', 'P.ctgr_product_id', '=', 'C.ctgr_product_id')
+            ->where('P.product_name', 'like', "%{$keyword}%")
+            ->orWhere('B.brand_name', 'like', "%{$keyword}%")
+            ->orWhere('C.ctgr_product_name', 'like', "%{$keyword}%")
+            ->select('P.*', 'B.brand_name', 'C.ctgr_product_name')
+            ->get();
+
+        return response()->json(['products' => $products], 200);
+    }
+
+    public function getBrandForAddProduct(Request $request)
+    {
+        $brands = DB::table('product_brand')
+            ->where('active', 'Y')
+            ->select('product_brand_id', 'brand_name')
+            ->get();
+
+        return response()->json(['brands' => $brands], 200);
+    }
+
+    public function getCtgrForAddProduct(Request $request)
+    {
+        $categories = DB::table('ctgr_products')
+            ->select('ctgr_product_id', 'ctgr_product_name')
+            ->get();
+
+        return response()->json(['categories' => $categories], 200);
     }
 }
