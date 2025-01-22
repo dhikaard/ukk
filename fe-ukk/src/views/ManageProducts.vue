@@ -102,7 +102,7 @@
                 </DataTable>
             </div>
         </section>
-        <DialogAddProduct :visible="showDialogAddProduct" @update:visible="showDialogAddProduct = $event" />
+        <DialogAddProduct v-model:visible="showDialogAddProduct" />
     </div>
 </template>
 

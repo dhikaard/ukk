@@ -15,24 +15,42 @@
         <section class="flex flex-column w-full">
             <p class="font-semibold text-xl mt-0 mb-2 text-900">Undang Anggota Tim</p>
             <p class="font-normal text-base mt-0 mb-3 text-600">Tambah anggota tim dan tentukan perannya!</p>
-            <Dropdown showClear filter :options="members" v-model="selectedMember" optionLabel="name" appendTo="body"
-                styleClass="w-full" class="h-4rem align-items-center">
+            <Dropdown 
+                showClear 
+                filter 
+                :emptyMessage="'Data tidak tersedia'" 
+                :emptyFilterMessage="'Tidak ada hasil yang ditemukan'" 
+                :options="context.userOptions" 
+                v-model="context.selectedMember" 
+                optionLabel="name" 
+                appendTo="body"
+                styleClass="w-full" 
+                class="h-4rem align-items-center"
+            >
                 <template #value>
                     <div class="flex align-items-center">
-                        <Avatar v-if="selectedMember" :name="selectedMember.name" alt="User Avatar" class="mr-2"
-                            style="height: 2.5rem;" />
+                        <Avatar 
+                            v-if="context.selectedMember" 
+                            :name="context.selectedMember.name" 
+                            alt="User Avatar" 
+                            class="mr-2"
+                            style="height: 2.5rem;" 
+                        />
                         <div>
-                            <p v-if="selectedMember" class="mt-0 mb-0 font-semibold text-base">{{ selectedMember.name }}
-                            </p>
-                            <p v-if="selectedMember" class="mt-0 mb-0 font-normal text-sm text-600">{{
-                                selectedMember.email }}</p>
+                            <p v-if="context.selectedMember" class="mt-0 mb-0 font-semibold text-base">{{ context.selectedMember.name }}</p>
+                            <p v-if="context.selectedMember" class="mt-0 mb-0 font-normal text-sm text-600">{{ context.selectedMember.email }}</p>
                             <p v-else class="mt-0 mb-0 font-normal text-base text-600">Pilih anggota</p>
                         </div>
                     </div>
                 </template>
                 <template #option="{ option }">
                     <div class="flex align-items-center">
-                        <Avatar :name="option.name" alt="User Avatar" class="mr-2" style="height: 2.5rem;" />
+                        <Avatar 
+                            :name="option.name" 
+                            alt="User Avatar" 
+                            class="mr-2" 
+                            style="height: 2.5rem;" 
+                        />
                         <div>
                             <p class="mt-0 mb-0 font-semibold text-base">{{ option.name }}</p>
                             <p class="mt-0 mb-0 font-normal text-sm text-600">{{ option.email }}</p>
@@ -53,12 +71,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useManageAdminStore } from '@/stores/manage-admin.store';
 import Avatar from './Avatar.vue';
 
-const members = ref([
-    { name: 'John Doe', email: 'john.doe@example.com' },
-    { name: 'Jane Smith', email: 'jane.smith@example.com' },
-]); // Example data
-const selectedMember = ref(null);
+const context = useManageAdminStore();
+
+onMounted(async () => {
+    await context.getUserForAddAdmin();
+});
 </script>

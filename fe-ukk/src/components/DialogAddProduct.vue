@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:visible="visible" :modal="true" :closable="true" :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
+    <Dialog v-model:visible="context.visible" :modal="true" :closable="true" :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
         :style="{ width: '55vw', maxWidth: '90vw', minWidth: '380px' }">
         <template #header>
             <div class="flex w-full justify-content-between align-items-center">
@@ -15,19 +15,20 @@
             <div class="grid formgrid p-fluid">
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="city" class="font-medium text-900">Nama Barang</label>
-                    <InputText id="city" type="text" placeholder="EOS 200D II (EF-S 18-55mm f/4-5.6 IS STM)" />
+                    <InputText v-model="context.productName" id="city" type="text"
+                        placeholder="EOS 200D II (EF-S 18-55mm f/4-5.6 IS STM)" />
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="city" class="font-medium text-900">Merk</label>
-                    <InputText id="city" type="text" placeholder="Canon" />
+                    <InputText v-model="context.brandName" id="city" type="text" placeholder="Canon" />
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="state" class="font-medium text-900">Kategori</label>
-                    <InputText id="state" type="text" placeholder="Kamera" />
+                    <InputText v-model="context.ctgrName" id="state" type="text" placeholder="Kamera" />
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="city" class="font-medium text-900">Stok</label>
-                    <InputNumber v-model="value" showButtons buttonLayout="horizontal" :min="1" placeholder="1">
+                    <InputNumber v-model="context.stock" showButtons buttonLayout="horizontal" :min="1" placeholder="1">
                         <template #incrementbuttonicon>
                             <span class="pi pi-plus" />
                         </template>
@@ -38,19 +39,19 @@
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="state" class="font-medium text-900">Harga / hari</label>
-                    <InputNumber inputId="currency-id" mode="currency" :minFractionDigits="0" currency="IDR"
-                        locale="id-ID" :allowEmpty="false" :min="0" inputClass="w-full mr-3">
+                    <InputNumber v-model="context.price" inputId="currency-id" mode="currency" :minFractionDigits="0"
+                        currency="IDR" locale="id-ID" :allowEmpty="false" :min="0" inputClass="w-full">
                     </InputNumber>
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="state" class="font-medium text-900">Denda (%)</label>
-                    <InputNumber inputId="percent" suffix="%" :allowEmpty="false" :min="0" :max="100"
-                        inputClass="w-full mr-3">
+                    <InputNumber v-model="context.fineBill" inputId="percent" suffix="%" :allowEmpty="false" :min="0"
+                        :max="100" inputClass="w-full">
                     </InputNumber>
                 </div>
                 <div class="field mb-4 col-12">
                     <label for="bio" class="font-medium text-900">Deskripsi</label>
-                    <Editor v-model="value" editorStyle="height: 200px">
+                    <Editor v-model="context.desc" editorStyle="height: 200px">
                         <template v-slot:toolbar>
                             <span class="ql-formats">
                                 <button v-tooltip.bottom="'Bold'" class="ql-bold"></button>
@@ -63,9 +64,8 @@
                 <div class="field mb-4 col-12">
                     <label for="thumbnail" class="font-medium text-900">Foto</label>
                     <div class="align-items-center">
-                        <FileUpload uploadLabel="Unggah" chooseLabel="Pilih" cancelLabel="Batal" name="demo[]"
-                            url="/api/upload" @upload="onAdvancedUpload($event)" :multiple="true" accept="image/*"
-                            :maxFileSize="1000000">
+                        <FileUpload :showUploadButton="false" chooseLabel="Pilih" cancelLabel="Batal" name="demo[]" @select="onFileSelect"
+                            :multiple="false" accept="image/*" :maxFileSize="1000000">
                             <template #empty>
                                 <p>Seret dan taruh file ke sini untuk mengunggah.</p>
                             </template>
@@ -78,7 +78,7 @@
             <div class="pt-2 flex border-top-1 surface-border gap-2 w-full">
                 <Button icon="pi pi-times" @click="$emit('update:visible', false)" label="Batal"
                     class="p-button-text w-full p-button-secondary"></Button>
-                <Button icon="pi pi-check" @click="$emit('update:visible', false)" label="Selesai"
+                <Button :loading="context.loading['addProduct']" icon="pi pi-check" @click="handleAddProduct" label="Selesai"
                     class="w-full p-button-primary"></Button>
             </div>
         </template>
@@ -87,7 +87,32 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useManageProductStore } from '@/stores/manage-product.store';
 
-const visible = ref(false);
-const value = ref(1);
+const context = useManageProductStore();
+const selectedFiles = ref([]);
+
+const onFileSelect = (event) => {
+    selectedFiles.value = event.files;
+};
+
+const handleAddProduct = async () => {
+    const formData = new FormData();
+    formData.append('productName', context.productName);
+    formData.append('brandId', context.brandId);
+    formData.append('brandName', context.brandName);
+    formData.append('ctgrId', context.ctgrId);
+    formData.append('ctgrName', context.ctgrName);
+    formData.append('stock', context.stock);
+    formData.append('price', context.price);
+    formData.append('fineBill', context.fineBill);
+    formData.append('desc', context.desc);
+
+    selectedFiles.value.forEach((file) => {
+        formData.append('urlImg', file);
+    });
+
+    await context.addProduct(formData);
+};
+
 </script>

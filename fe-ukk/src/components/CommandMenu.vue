@@ -42,13 +42,13 @@ const visible = ref(true);
 
 const articles = computed(() => {
     return [
-        { name: 'Sewa Barang', description: 'Cari barang untuk disewa', iconClass: 'pi pi-home', onClick: () => router.push({ name: 'home' }) },
+        { name: 'Sewa Barang', description: 'Cari barang untuk disewa', iconClass: 'pi pi-warehouse', onClick: () => router.push({ name: 'home' }) },
         { name: 'Riwayat Sewa', description: 'Lihat riwayat barang yang sudah disewa', iconClass: 'bi bi-receipt-cutoff', onClick: () => router.push({ name: 'history' }) },
         { name: 'Pengaturan', description: 'Ubah data pribadi', iconClass: 'pi pi-cog' },
         {
             name: isDarkMode.value ? 'Mode Terang' : 'Mode Gelap',
             description: isDarkMode.value ? 'Beralih ke mode terang agar tampilan lebih cerah' : 'Beralih ke mode gelap supaya mata terlindungi',
-            iconClass: 'pi pi-moon',
+            iconClass: isDarkMode.value ? 'pi pi-sun' : 'pi pi-moon',
             onClick: switchTheme
         },
         { name: 'Keluar', description: 'Akhiri sesi', iconClass: 'pi pi-sign-out', onClick: () => router.push({ name: 'login' }) }

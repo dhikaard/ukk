@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import local from '../utils/local-storage';
 import HomeView from '../views/HomeView.vue'
 import History from '../views/HistoryView.vue'
 import NotFound from '../views/NotFoundView.vue'
@@ -40,17 +41,26 @@ const routes = [
   {
     path: '/manage-admin-roles',
     name: 'adminRoles',
-    component: AdminRoles
+    component: AdminRoles,
+    meta: {
+      taskNames: ['manageAdmin'],
+    }
   },
   {
     path: '/manage-products',
     name: 'manageProducts',
-    component: ManageProducts
+    component: ManageProducts,
+    meta: {
+      taskNames: ['manageProduct', 'manageAdmin'],
+    }
   },
   {
     path: '/manage-transactions',
     name: 'manageTransactions',
-    component: ManageTransactions
+    component: ManageTransactions,
+    meta: {
+      taskNames: ['manageAdmin', 'manageProduct'],
+    }
   },
   {
     path: '/:pathMatch(.*)*',
@@ -63,6 +73,21 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+  const permissions = JSON.parse(local.get('permissions'));
+  const requiredTasks = to.meta.taskNames || [];
+
+  if (requiredTasks.length > 0 && permissions) {
+    const hasAccess = requiredTasks.some(task => permissions.includes(task));
+
+    if (!hasAccess) {
+      return next({ name: 'notFound' });
+    }
+  }
+
+  next();
 })
 
 export default router

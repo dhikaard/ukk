@@ -60,9 +60,15 @@ class AuthController extends Controller
             ->where('A.user_id', auth()->id())
             ->first();
 
+        $permissions = DB::table('permissions')
+            ->where('role_id', $userWithRole->role_id)
+            ->pluck('permission_name')
+            ->toArray();
+
         return response()->json([
             'access_token' => $token,
             'user' => [$userWithRole],
+            'permissions' => $permissions,
         ]);
     }
 }
