@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id('products_id');
             $table->string('products_name', 256);
             $table->string('products_code', 15);
-            $table->bigInteger('category_products_id')->default(-99);
+            $table->integer('ctgr_products_id')->default(-99);
             $table->text('desc');
             $table->bigInteger('stock');
             $table->double('price');
             $table->double('fine_bill');
             $table->boolean('active')->default(true);
-            $table->text('url_img')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

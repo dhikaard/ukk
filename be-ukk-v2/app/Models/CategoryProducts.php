@@ -9,11 +9,12 @@ class CategoryProducts extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'category_products_id'; // Sesuaikan dengan nama kolom primary key
-    public $incrementing = true; // Pastikan primary key auto increment
+    protected $table = 'ctgr_products';
+    protected $primaryKey = 'ctgr_products_id';
+    public $incrementing = true;
 
     protected $fillable = [
-        'category_products_name',
+        'ctgr_products_name',
         'active',
     ];
 }

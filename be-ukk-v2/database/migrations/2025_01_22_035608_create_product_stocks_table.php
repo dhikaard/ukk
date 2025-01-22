@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ctgr_products', function (Blueprint $table) {
-            $table->id('ctgr_products_id');
-            $table->string('ctgr_products_name', 256);
-            $table->boolean('active')->default(true);
+        Schema::create('product_stock', function (Blueprint $table) {
+            $table->id('product_stock_id');
+            $table->bigInteger('products_id');
+            $table->bigInteger('size');
+            $table->bigInteger('stock');
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('category_products');
+        Schema::dropIfExists('product_stocks');
     }
 };
