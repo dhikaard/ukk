@@ -56,13 +56,27 @@ class ManageProductController extends Controller
     public function getProducts(Request $request)
     {
         $keyword = $request->input('keyword');
+        $ctgrId = $request->input('ctgrId');
+        $brandId = $request->input('brandId');
+        $priceRange = $request->input('priceRange');
 
         $products = DB::table('products as P')
             ->join('product_brand as B', 'P.product_brand_id', '=', 'B.product_brand_id')
             ->join('ctgr_products as C', 'P.ctgr_product_id', '=', 'C.ctgr_product_id')
-            ->where('P.product_name', 'like', "%{$keyword}%")
-            ->orWhere('B.brand_name', 'like', "%{$keyword}%")
-            ->orWhere('C.ctgr_product_name', 'like', "%{$keyword}%")
+            ->when($keyword, function ($query, $keyword) {
+                return $query->where('P.product_name', 'like', "%{$keyword}%")
+                             ->orWhere('B.brand_name', 'like', "%{$keyword}%")
+                             ->orWhere('C.ctgr_product_name', 'like', "%{$keyword}%");
+            })
+            ->when($ctgrId, function ($query, $ctgrId) {
+                return $query->where('P.ctgr_product_id', $ctgrId);
+            })
+            ->when($brandId, function ($query, $brandId) {
+                return $query->where('P.product_brand_id', $brandId);
+            })
+            ->when($priceRange, function ($query, $priceRange) {
+                return $query->whereBetween('P.price', [$priceRange[0], $priceRange[1]]);
+            })
             ->select('P.*', 'B.brand_name', 'C.ctgr_product_name')
             ->get();
 

@@ -29,6 +29,9 @@ export const useManageProductStore = defineStore({
     dataTable: {},
     brandOptions: {},
     ctgrOptions: {},
+    ctgrId: '',
+    brandId: '',
+    priceRange: [0, 2000000],
   }),
   actions: {
     async addProduct(formData) {
@@ -68,6 +71,9 @@ export const useManageProductStore = defineStore({
         api: this.getApi,
         body: {
           keyword: this.keyword,
+          ctgrId: this.ctgrId,
+          brandId: this.brandId,
+          priceRange: this.priceRange,
         },
       };
       const result = await callApi(payload);
@@ -85,6 +91,7 @@ export const useManageProductStore = defineStore({
           fineBill: data.fine_bill,
           createdAt: data.created_at,
           updatedAt: data.updated_at,
+          active: data.active,
           urlImg: data.url_img,
         }));
         this.loading["getProducts"] = false;

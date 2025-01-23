@@ -41,8 +41,8 @@
             </template>
             <template v-else>
                 <div class="flex align-items-center">
-                    <Button label="Masuk" class="p-button-text h-3rem font-bold"></Button>
-                    <Button label="Daftar" class="ml-3 h-3rem font-bold"></Button>
+                    <Button label="Masuk" class="p-button-text h-3rem font-bold" @click="goToLogin"></Button>
+                    <Button label="Daftar" class="ml-3 h-3rem font-bold" @click="goToRegister"></Button>
                 </div>
             </template>
 
@@ -65,6 +65,14 @@ const commandMenuVisible = ref(false);
 
 const goToHistory = () => {
     router.push({ name: 'history' });
+};
+
+const goToLogin = () => {
+    router.push({ name: 'login' });
+};
+
+const goToRegister = () => {
+    router.push({ name: 'register' });
 };
 
 const showCommandMenu = () => {
