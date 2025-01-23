@@ -67,8 +67,8 @@
                 <div class="field mb-4 col-12">
                     <label for="thumbnail" class="font-medium text-900">Foto Barang</label>
                     <div class="align-items-center">
-                        <FileUpload :showUploadButton="false" chooseLabel="Pilih" cancelLabel="Batal" name="demo[]"
-                            @select="onFileSelect" :multiple="false" accept="image/*" :maxFileSize="1000000">
+                        <FileUpload invalidFileLimitMessage="Melewati batas unggahan maksimum file" invalidFileSizeMessage="Ukuran file terlalu besar" :showUploadButton="false" chooseLabel="Pilih" cancelLabel="Batal" name="demo[]"
+                            @select="onFileSelect" :multiple="false" accept="image/*" :maxFileSize="2000000" previewWidth="100" fileLimit="1">
                             <template #empty>
                                 <p>Seret dan taruh file ke sini untuk mengunggah.</p>
                             </template>
