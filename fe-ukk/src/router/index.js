@@ -35,7 +35,7 @@ const routes = [
     component: History
   },
   {
-    path: '/product/:id',
+    path: '/product/:productCode',
     name: 'product',
     component: Product
   },

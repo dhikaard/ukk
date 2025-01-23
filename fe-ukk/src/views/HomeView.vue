@@ -23,12 +23,15 @@
             <div class="col-fixed lg:col-2 flex p-0 flex-column w-full lg:w-3">
                 <div class="flex flex-column pb-2">
                     <p tabindex="0"
-                        class="cursor-pointer text-900 font-bold mb-3 hover:text-primary transition-duration-150">
-                        Kategori</p>
-                    <div v-for="category in context.ctgrOptions" :key="category.id">
+                        class="cursor-pointer text-900 font-bold mb-3 hover:text-primary transition-duration-150"
+                        @click="resetCategoryFilter">
+                        Kategori
+                    </p>
+                    <div v-for="category in context.ctgrOptions" :key="category.id" class="mb-2">
                         <Skeleton v-if="context.loading['getCtgr']" class="mb-2 w-10rem"></Skeleton>
                         <a v-else tabindex="0" @click="filterByCategory(category.id)"
-                            class="cursor-pointer text-900 font-medium mb-3 hover:text-primary transition-duration-150">
+                            :class="{'text-primary': context.ctgrId === category.id, 'text-900': context.ctgrId !== category.id}"
+                            class="cursor-pointer font-medium mb-3 hover:text-primary transition-duration-150">
                             {{ category.ctgrName }}
                         </a>
                     </div>
@@ -118,7 +121,7 @@
                                                 <span v-else class="text-xl font-semibold text-900">{{ toCurrencyLocale(item.price) }}</span>
                                                 <div class="flex flex-row-reverse md:flex-row gap-2">
                                                     <Button v-if="!context.loading['getProducts']" icon="pi pi-external-link" label="Lihat Detail" outlined
-                                                        class="flex-auto white-space-nowrap p-button-sm" @click="viewDetail(item.id)"></Button>
+                                                        class="flex-auto white-space-nowrap p-button-sm" @click="viewDetail(item.productCode)"></Button>
                                                 </div>
                                             </div>
                                         </div>
@@ -150,7 +153,7 @@
                                                     <Tag v-if="!context.loading['getProducts']" :value="item.active === 'Y' ? 'TERSEDIA' : 'TIDAK TERSEDIA'"
                                                         :severity="getSeverity(item)" class="absolute" style="right: 0; top: 0"></Tag>
                                                     <Skeleton v-if="context.loading['getProducts']" class="h-1rem w-12rem mt-2"></Skeleton>
-                                                    <div v-else class="text-lg font-medium text-900 mt-1">{{ item.productName }}</div>
+                                                    <div v-else class="text-lg font-medium text-900 mt-3">{{ item.productName }}</div>
                                                 </div>
                                             </div>
                                             <div class="flex flex-column gap-4 mt-4">
@@ -158,7 +161,7 @@
                                                 <span v-else class="text-2xl font-semibold text-900">{{ toCurrencyLocale(item.price) }}</span>
                                                 <div class="flex gap-2">
                                                     <Button v-if="!context.loading['getProducts']" icon="pi pi-external-link" label="Lihat Detail" outlined
-                                                        class="flex-auto white-space-nowrap p-button-sm" @click="viewDetail(item.id)"></Button>
+                                                        class="flex-auto white-space-nowrap p-button-sm" @click="viewDetail(item.productCode)"></Button>
                                                 </div>
                                             </div>
                                         </div>
@@ -185,8 +188,8 @@ const selectedBrand_1 = ref([]);
 const rangeValues = ref([0, 2000000]);
 const router = useRouter();
 
-const viewDetail = (id) => {
-    router.push({ name: 'product', params: { id } });
+const viewDetail = (productCode) => {
+    router.push({ name: 'product', params: { productCode } });
 };
 
 const filterByCategory = (ctgrId) => {
@@ -201,6 +204,11 @@ const filterByBrand = () => {
 
 const filterByPriceRange = () => {
     context.priceRange = rangeValues.value;
+    context.getProducts();
+};
+
+const resetCategoryFilter = () => {
+    context.ctgrId = '';
     context.getProducts();
 };
 

@@ -14,12 +14,13 @@ Route::prefix('v1/rent')->group(function () {
         // Manage Admin & Role
         Route::post('/getUserAdmin', [ManageAdminController::class, 'getUserAdmin']);
         Route::get('/getUserForAddAdmin', [ManageAdminController::class, 'getUserForAddAdmin']);
-        Route::post('/addUserAdmin', [ManageAdminController::class, 'addUserAdmin']);
         Route::post('/editUserAdmin', [ManageAdminController::class, 'editUserAdmin']);
         Route::get('/getRolePermission', [ManageAdminController::class, 'getRolePermission']);
 
         // Manage Products
         Route::post('/addProduct', [ManageProductController::class, 'addProduct']);
+        Route::post('/editProduct', [ManageProductController::class, 'editProduct']);
+        Route::post('/removeProduct', [ManageProductController::class, 'removeProduct']);
         Route::get('/getBrandForAddProduct', [ManageProductController::class, 'getBrandForAddProduct']);
         Route::get('/getCtgrForAddProduct', [ManageProductController::class, 'getCtgrForAddProduct']);
     });

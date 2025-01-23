@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { GeneralConstants } from '@/utils/general-constants';
 import callApi from "@/utils/api-connect";
 import { ApiConstant } from "@/api-constant";
 import { useRouter } from "vue-router";
@@ -6,65 +7,28 @@ import { useRouter } from "vue-router";
 export const useManageProductStore = defineStore({
   id: "manage-product.store",
   state: () => ({
-    addApi: ApiConstant.ADD_PRODUCT,
     getApi: ApiConstant.GET_PRODUCTS,
     brandApi: ApiConstant.GET_BRAND_FOR_ADD_PRODUCT,
     ctgrApi: ApiConstant.GET_CTGR_FOR_ADD_PRODUCT,
     keyword: "",
-    productId: -99,
-    productName: "",
-    brandId: '',
-    brandName: "",
-    ctgrId: '',
-    ctgrName: "",
-    stock: 1,
-    price: 0,
-    fineBill: 0,
-    desc: "",
-    urlImg: "",
-    router: useRouter(),
     loading: {},
-    visible: false,
-    keyword: "",
-    dataTable: {},
-    brandOptions: {},
-    ctgrOptions: {},
-    ctgrId: '',
-    brandId: '',
+    dataTable: [],
+    totalRecords: 0,
+    rowPerPageOptions: GeneralConstants.ROW_PERPAGE_OPTION,
+    defaultRows: GeneralConstants.DEFAULT_ROWS,
+    offset: 0,
+    limit: GeneralConstants.DEFAULT_ROWS,
+    brandOptions: [],
+    ctgrOptions: [],
     priceRange: [0, 2000000],
+    selectedProduct: {},
   }),
   actions: {
-    async addProduct(formData) {
-      this.loading["addProduct"] = true;
-
-      const result = await callApi({
-        api: this.addApi,
-        body: formData,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (result.isOk) {
-        const product = result.body.product.map((data) => ({
-          id: data.id,
-          active: data.active,
-          createdAt: data.createdAt,
-          ctgrProductId: data.ctgr_product_id,
-          desc: data.desc,
-          productBrandId: data.product_brand_id,
-          productCode: data.product_code,
-          productName: data.product_name,
-          stock: data.stock,
-          urlImg: data.url_img,
-          updatedAt: data.updated_at,
-        }));
-        this.loading["addProduct"] = false;
-        this.visible = false;
-        this.getProducts();
-
-        return product;
-      }
-      this.loading["addProduct"] = false;
-    },
+    onPage(event) {
+      this.offset = event.page * event.rows;
+      this.limit = event.rows;
+      this.getProducts();
+  },
     async getProducts() {
       this.loading["getProducts"] = true;
       const payload = {
@@ -74,6 +38,8 @@ export const useManageProductStore = defineStore({
           ctgrId: this.ctgrId,
           brandId: this.brandId,
           priceRange: this.priceRange,
+          limit: this.limit,
+          offset:this.offset
         },
       };
       const result = await callApi(payload);
@@ -92,8 +58,10 @@ export const useManageProductStore = defineStore({
           createdAt: data.created_at,
           updatedAt: data.updated_at,
           active: data.active,
+          desc: data.desc,
           urlImg: data.url_img,
         }));
+        this.totalRecords = result.body.totalRecords;
         this.loading["getProducts"] = false;
         this.dataTable = products;
 
@@ -138,6 +106,17 @@ export const useManageProductStore = defineStore({
         return categories;
       }
       this.loading["getCtgr"] = false;
+    },
+    async removeProduct(productId) {
+      this.loading["removeProduct"] = true;
+      const payload = {
+        api: ApiConstant.REMOVE_PRODUCT,
+        body: { productId },
+      };
+      const result = await callApi(payload);
+      this.getProducts();
+      this.loading["removeProduct"] = false;
+      return result.isOk;
     },
   },
 });

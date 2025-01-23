@@ -12,8 +12,9 @@ export const useManageAdminStore = defineStore({
     keyword: '',
     dataTableAdmin: {},
     dataTableRoles: {},
-    userOptions: {},
-    selectedMember: {},
+    userOptions: null,
+    selectedMember: null,
+    selectedRole: null,
     router: useRouter(),
     loading: {},
   }),
@@ -98,13 +99,27 @@ export const useManageAdminStore = defineStore({
       }
       this.loading['getUser'] = false;
     },
+
+    async editUserAdmin(userId, roleId) {
+      this.loading['editUser'] = true;
+      const payload = {
+        api: ApiConstant.EDIT_USER_ADMIN,
+        body: {
+          user_id: userId,
+          role_id: roleId
+        },
+      };
+      const result = await callApi(payload);
+      this.loading['editUser'] = false;
+      this.getManageAdmin();
+      this.getRolePermission();
+
+      return result.isOk;
+    },
   },
   getters: {
-    isRegisterDisabled(state) {
-        return !state.name || !state.email || !state.password || !state.passwordConfirm || !state.address || !state.phone;
+    isInviteAdminDisabled(state) {
+      return !state.selectedMember || !state.selectedRole;
     },
-    isLoginDisabled(state) {
-      return !state.email || !state.password;
-  },
   }
 });

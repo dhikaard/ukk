@@ -25,7 +25,8 @@
                     @click="showDialogAddProduct = true"></Button>
             </div>
             <div class="mt-3">
-                <DataTable :value="context.dataTable" :tabStyle="{ 'min-width': '60rem' }" rowHover>
+                <DataTable scrollable scrollHeight="500px" :value="context.dataTable"
+                    :tabStyle="{ 'min-width': '60rem' }" rowHover>
                     <template #empty>
                         <p class="text-center w-full">Data tidak tersedia</p>
                     </template>
@@ -100,9 +101,20 @@
                         <template #body="{ data }">
                             <Skeleton v-if="context.loading['getProducts']" shape="circle" size="1rem"></Skeleton>
                             <p v-else class="font-normal text-base text-color-secondary">
-                                <i v-if="data.active === 'Y'" class="pi pi-check-circle text-green-500"></i>
-                                <i v-else class="pi pi-times-circle text-red-500"></i>
+                                <i v-if="data.active === 'Y'" class="pi pi-check-circle text-green-500"
+                                    v-tooltip.right="'TERSEDIA'"></i>
+                                <i v-else class="pi pi-times-circle text-red-500"
+                                    v-tooltip.right="'TIDAK TERSEDIA'"></i>
                             </p>
+                        </template>
+                    </Column>
+                    <Column style="min-width:10rem">
+                        <template #header>
+                            <span class="font-semibold text-sm text-color-secondary">Keterangan</span>
+                        </template>
+                        <template #body="{ data }">
+                            <Skeleton v-if="context.loading['getProducts']" class="h-1rem w-full"></Skeleton>
+                            <p v-else class="font-normal text-base text-color-secondary">{{ data.desc }}</p>
                         </template>
                     </Column>
                     <Column style="min-width:14rem">
@@ -131,9 +143,12 @@
                         </template>
                     </Column>
                 </DataTable>
+                <Paginator :rows="context.defaultRows" :rowsPerPageOptions="context.rowPerPageOptions"
+                    :totalRecords="context.totalRecords" :first="context.limit" @page="context.onPage($event)" />
             </div>
         </section>
-        <DialogAddProduct v-model:visible="showDialogAddProduct" />
+        <DialogAddProduct v-if="showDialogAddProduct" v-model:visible="showDialogAddProduct" />
+        <DialogEditProduct v-if="showDialogEditProduct" v-model:visible="showDialogEditProduct" />
     </div>
 </template>
 
@@ -141,10 +156,14 @@
 import { defineAsyncComponent, ref, onMounted } from 'vue';
 import { toCurrencyLocale } from '../utils/currency';
 import { useManageProductStore } from '@/stores/manage-product.store';
+import { useEditProductStore } from '@/stores/edit-product.store';
 
 const context = useManageProductStore();
+const edit = useEditProductStore();
 const DialogAddProduct = defineAsyncComponent(() => import('../components/DialogAddProduct.vue'));
 const showDialogAddProduct = ref(false);
+const DialogEditProduct = defineAsyncComponent(() => import('../components/DialogEditProduct.vue'));
+const showDialogEditProduct = ref(false);
 
 const getMenuItems = (data) => {
     return [
@@ -154,11 +173,14 @@ const getMenuItems = (data) => {
                 {
                     label: 'Edit',
                     icon: 'pi pi-pencil',
-                    command: () => editProduct(data)
+                    command: () => {
+                        edit.selectedProduct = data
+                        showDialogEditProduct.value = true;
+                    }
                 },
                 {
                     label: 'Hapus',
-                    icon: 'pi pi-trash text-red-500',
+                    icon: 'pi pi-trash',
                     command: () => deleteProduct(data.id)
                 }
             ]
@@ -166,14 +188,8 @@ const getMenuItems = (data) => {
     ];
 };
 
-const editProduct = (data) => {
-    // Implement edit product logic here
-    console.log('Edit product:', data);
-};
-
 const deleteProduct = (id) => {
-    // Implement delete product logic here
-    console.log('Delete product with id:', id);
+    context.removeProduct(id);
 };
 
 onMounted(async () => {
