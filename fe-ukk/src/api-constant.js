@@ -14,6 +14,11 @@ export const ApiConstant = {
         method: 'POST',
         keyList: ''
     },
+    EDIT_USER_ADMIN: {
+        path: 'editUserAdmin',
+        method: 'POST',
+        keyList: ''
+    },
     GET_ROLE_PERMISSION: {
         path: 'getRolePermission',
         method: 'GET',
@@ -29,8 +34,18 @@ export const ApiConstant = {
         method: 'POST',
         keyList: ''
     },
+    EDIT_PRODUCT: {
+        path: 'editProduct',
+        method: 'POST',
+        keyList: ''
+    },
     GET_PRODUCTS: {
         path: 'getProducts',
+        method: 'POST',
+        keyList: ''
+    },
+    REMOVE_PRODUCT: {
+        path: 'removeProduct',
         method: 'POST',
         keyList: ''
     },

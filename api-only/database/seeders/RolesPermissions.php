@@ -14,16 +14,19 @@ class RolesPermissions extends Seeder
         DB::table('roles')->insert([
             [
                 'role_name' => 'Owner',
+                'authority' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'role_name' => 'Administrator',
+                'authority' => 2,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'role_name' => 'Pengguna',
+                'authority' => 3,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -33,6 +36,12 @@ class RolesPermissions extends Seeder
             [
                 'role_id' => 1,
                 'permission_name' => 'manageAdmin',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'role_id' => 1,
+                'permission_name' => 'manageProduct',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

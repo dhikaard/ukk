@@ -13,7 +13,7 @@
             <span class="p-input-icon-right mt-5 mb-2 md:mt-0 md:mb-0 w-full lg:w-25rem">
                 <IconField iconPosition="left">
                     <InputIcon class="pi pi-search"> </InputIcon>
-                    <InputText v-model="context.keyword" placeholder="Nama Lengkap" class="w-full"
+                    <InputText v-model="context.keyword" placeholder="Nama Lengkap / Email" class="w-full"
                         @keyup.enter="context.getManageAdmin" />
                 </IconField>
             </span>
@@ -65,16 +65,6 @@
                             </div>
                         </template>
                     </Column>
-                    <Column style="min-width:14rem">
-                        <template #header>
-                            <span class="font-semibold text-sm text-color-secondary">Tanggal Bergabung</span>
-                        </template>
-                        <template #body="{ data }">
-                            <Skeleton v-if="context.loading['getAdmin']" height="2rem"></Skeleton>
-                            <p v-else class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.updatedAt }}
-                            </p>
-                        </template>
-                    </Column>
                     <Column style="min-width:13rem">
                         <template #header>
                             <span class="font-semibold text-sm text-color-secondary">Peran</span>
@@ -82,6 +72,16 @@
                         <template #body="{ data }">
                             <Skeleton v-if="context.loading['getAdmin']" height="2rem"></Skeleton>
                             <p v-else class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.roleName }}
+                            </p>
+                        </template>
+                    </Column>
+                    <Column style="min-width:14rem">
+                        <template #header>
+                            <span class="font-semibold text-sm text-color-secondary">Tanggal Bergabung</span>
+                        </template>
+                        <template #body="{ data }">
+                            <Skeleton v-if="context.loading['getAdmin']" height="2rem"></Skeleton>
+                            <p v-else class="mt-0 mb-2 font-normal text-base text-color-secondary">{{ data.updatedAt }}
                             </p>
                         </template>
                     </Column>
@@ -108,7 +108,7 @@
             </div>
             <div class="mt-3">
                 <DataTable :value="context.dataTableRoles" rowHover>
-                    <Column style="min-width:25rem">
+                    <Column style="min-width:20rem">
                         <template #header>
                             <span class="font-semibold text-sm text-color-secondary">Nama Peran</span>
                         </template>
@@ -117,7 +117,7 @@
                             <p v-else class="mt-0 mb-0 font-medium text-lg text-color-primary">{{ data.roleName }}</p>
                         </template>
                     </Column>
-                    <Column style="min-width:13rem">
+                    <Column style="min-width:15rem">
                         <template #header>
                             <span class="font-semibold text-sm text-color-secondary">Izin</span>
                         </template>
@@ -127,19 +127,19 @@
                                 data.permissionName }}</p>
                         </template>
                     </Column>
-                    <Column style="min-width:13rem">
+                    <Column style="min-width:8rem">
                         <template #header>
                             <span class="font-semibold text-sm text-color-secondary">Pengguna</span>
                         </template>
                         <template #body="{ data }">
                             <Skeleton v-if="context.loading['getRole']" height="2rem"></Skeleton>
-                            <p v-else class="mt-0 mb-0 font-normal text-base text-color-secondary">{{ data.userCount }}
+                            <p v-else class="mt-0 mb-0 font-normal text-right text-base text-color-secondary">{{ data.userCount }}
                             </p>
                         </template>
                     </Column>
                     <Column style="min-width:14rem">
                         <template #header>
-                            <span class="font-semibold text-sm text-color-secondary">Terakhir Diubah</span>
+                            <span class="font-semibold text-sm text-color-secondary">Tanggal Pembaruan</span>
                         </template>
                         <template #body="{ data }">
                             <Skeleton v-if="context.loading['getRole']" height="2rem"></Skeleton>

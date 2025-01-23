@@ -14,6 +14,7 @@
     "axios": "^1.7.9",
     "bootstrap-icons": "^1.11.3",
     "fe-ukk": "file:",
+    "mitt": "^3.0.1",
     "pinia": "^2.3.0",
     "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",

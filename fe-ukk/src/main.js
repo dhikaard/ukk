@@ -17,6 +17,8 @@ import StyleClass from 'primevue/styleclass';
 import FocusTrap from 'primevue/focustrap';
 import Badge from 'primevue/badge';
 import Tooltip from 'primevue/tooltip';
+import ToastService from 'primevue/toastservice';
+import Toast from 'primevue/toast';
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -28,6 +30,9 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.use(PrimeVue, { ripple: true });
+app.use(ToastService);
+
+app.component('Toast', Toast);
 
 // app.directive
 app.directive('badge', Badge);
