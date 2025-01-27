@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\ProductsResource\Pages;
+namespace App\Filament\Resources\ItemsResource\Pages;
 
-use App\Filament\Resources\ProductsResource;
+use App\Filament\Resources\ItemsResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListProducts extends ListRecords
+class ListItems extends ListRecords
 {
-    protected static string $resource = ProductsResource::class;
+    protected static string $resource = ItemsResource::class;
 
     protected function getHeaderActions(): array
     {

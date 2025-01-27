@@ -38,7 +38,7 @@
     </div>
 </template>
 
-<script setup>
+<script setup>  
 import { ref } from 'vue';
 
 // Daftar Ketentuan Sewa dalam Bentuk Array

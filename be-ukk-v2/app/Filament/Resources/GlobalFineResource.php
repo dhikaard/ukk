@@ -2,43 +2,49 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CategoryProductsResource\Pages;
-use App\Filament\Resources\CategoryProductsResource\RelationManagers;
-use App\Models\CategoryProducts;
+use App\Filament\Resources\GlobalFineResource\Pages;
+use App\Models\GlobalFine;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class CategoryProductsResource extends Resource
+class GlobalFineResource extends Resource
 {
-    protected static ?string $model = CategoryProducts::class;
+    protected static ?string $model = GlobalFine::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-receipt-percent';
 
     public static function form(Form $form): Form
     {
         return $form
-        ->schema([
-            Forms\Components\TextInput::make('ctgr_products_name')
-                ->required(),
-            Forms\Components\Toggle::make('active')
-                ->label('Aktif')
-                ->visible(fn ($livewire) => $livewire instanceof Pages\EditCategoryProducts), // Hanya muncul saat edit
-        ]);
+            ->schema([
+                Forms\Components\TextInput::make('fine_name')
+                    ->required(),
+                Forms\Components\TextInput::make('fine_percentage')
+                    ->required()
+                    ->numeric(),
+                Forms\Components\TimePicker::make('time_limit')
+                    ->label('Waktu Limit')
+                    ->native(false)
+                    ->weekStartsOnMonday()
+                    ->closeOnDateSelection()
+                    ->reactive()
+                    ->required(),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('ctgr_products_name')
+                Tables\Columns\TextColumn::make('fine_name')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('active')
-                    ->boolean(),
+                Tables\Columns\TextColumn::make('fine_percentage')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('time_limit'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -61,11 +67,6 @@ class CategoryProductsResource extends Resource
             ]);
     }
 
-    public static function getModelLabel(): string
-    {
-        return 'Kategori Produk';
-    }
-
     public static function getRelations(): array
     {
         return [
@@ -76,9 +77,9 @@ class CategoryProductsResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCategoryProducts::route('/'),
-            'create' => Pages\CreateCategoryProducts::route('/create'),
-            'edit' => Pages\EditCategoryProducts::route('/{record}/edit'),
+            'index' => Pages\ListGlobalFines::route('/'),
+            'create' => Pages\CreateGlobalFine::route('/create'),
+            'edit' => Pages\EditGlobalFine::route('/{record}/edit'),
         ];
     }
 }

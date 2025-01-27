@@ -1,23 +1,20 @@
 <?php
-namespace App\Filament\Resources\ProductsResource\Pages;
+namespace App\Filament\Resources\ItemsResource\Pages;
 
-use App\Filament\Resources\ProductsResource;
+use App\Filament\Resources\ItemsResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
-class CreateProducts extends CreateRecord
+class CreateItems extends CreateRecord
 {
-    protected static string $resource = ProductsResource::class;
+    protected static string $resource = ItemsResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        Log::info('Data sebelum disimpan:', $data);
-        Log::info('=== Edit Produk: Data sebelum diupdate ===', $data);
-
-        if (empty($data['stock']) && empty($data['productStock'])) {
-            Log::warning('Validasi gagal: Stock & productStock kosong!', $data);
+        Log::info('Data sebelum diupdate:', $data); // Debugging
+        if (empty($this->data['stock']) && empty($this->data['itemStock'])) {
             Notification::make()
                 ->title('Error')
                 ->body('Harap isi salah satu antara stok produk atau ukuran & stok.')
@@ -29,4 +26,5 @@ class CreateProducts extends CreateRecord
 
         return $data;
     }
+
 }
