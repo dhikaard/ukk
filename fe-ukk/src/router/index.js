@@ -10,6 +10,7 @@ import ManageProducts from '../views/ManageProducts.vue'
 import Register from '../views/Register.vue'
 import ManageTransactions from '@/views/ManageTransactions.vue'
 import ManageBrandCtgr from '@/views/ManageBrandCtgr.vue'
+import ResetPassword from '@/views/ResetPassword.vue';
 
 const routes = [
   {
@@ -27,6 +28,12 @@ const routes = [
     path: '/register',
     name: 'register',
     component: Register,
+    meta: { hideNavbarFooter: true }
+  },
+  {
+    path: '/reset-password',
+    name: 'resetPassword',
+    component: ResetPassword,
     meta: { hideNavbarFooter: true }
   },
   {

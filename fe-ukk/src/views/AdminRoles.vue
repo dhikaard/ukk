@@ -86,11 +86,12 @@
                         </template>
                     </Column>
                     <Column style="min-width:8rem">
-                        <template #body="{}">
+                        <template #body="{ data }">
                             <Skeleton v-if="context.loading['getAdmin']" height="2rem"></Skeleton>
-                            <Button v-else type="button" icon="pi pi-ellipsis-v"
-                                class="p-button-text p-button-secondary" @click="$refs.menu.toggle($event)"></Button>
-                            <Menu ref="menu" appendTo="body" popup :model="items"></Menu>
+                            <Button v-else type="button" icon="pi pi-ellipsis-v" class="p-button-text p-button-secondary"
+                                @click="$refs['menu-' + data.id].toggle($event)"></Button>
+                            <Menu :ref="'menu-' + data.id" appendTo="body" popup :model="getMenuAdminItems(data)">
+                            </Menu>
                         </template>
                     </Column>
                 </DataTable>
@@ -133,7 +134,8 @@
                         </template>
                         <template #body="{ data }">
                             <Skeleton v-if="context.loading['getRole']" height="2rem"></Skeleton>
-                            <p v-else class="mt-0 mb-0 font-normal text-right text-base text-color-secondary">{{ data.userCount }}
+                            <p v-else class="mt-0 mb-0 font-normal text-right text-base text-color-secondary">{{
+                                data.userCount }}
                             </p>
                         </template>
                     </Column>
@@ -148,18 +150,23 @@
                         </template>
                     </Column>
                     <Column style="min-width:8rem">
-                        <template #body>
+                        <template #body="{ data }">
                             <Skeleton v-if="context.loading['getRole']" height="2rem"></Skeleton>
-                            <Button v-else type="button" icon="pi pi-ellipsis-v"
-                                class="p-button-text p-button-secondary" @click="$refs.menu.toggle($event)"></Button>
-                            <Menu ref="menu" appendTo="body" popup :model="items"></Menu>
+                            <Button v-else type="button" icon="pi pi-ellipsis-v" class="p-button-text p-button-secondary"
+                                @click="$refs['menu-' + data.id].toggle($event)"></Button>
+                            <Menu :ref="'menu-' + data.id" appendTo="body" popup :model="getMenuRoleItems(data)"></Menu>
                         </template>
                     </Column>
                 </DataTable>
             </div>
         </section>
-        <DialogInviteAdmin :visible="showDialogInvite" @update:visible="showDialogInvite = $event" />
-        <DialogAddRoles :visible="showDialogAddRoles" @update:visible="showDialogAddRoles = $event" />
+        <DialogInviteAdmin v-if="showDialogInvite" v-model:visible="showDialogInvite" />
+        <DialogAddRoles v-if="showDialogAddRoles" v-model:visible="showDialogAddRoles" />
+        <DialogEditAdmin v-if="showDialogEditAdmin" v-model:visible="showDialogEditAdmin" />
+        <DialogConfirm v-if="showDialogConfirm" v-model:visible="showDialogConfirm" :acceptLabel="'Keluarkan'"
+            :onAccept="confirmDelete" :onReject="cancelDelete" :header="confirmHeader" :message="confirmMessage"
+            :acceptLoading="context.loading['removeAdmin']" />
+
     </div>
 </template>
 
@@ -173,9 +180,77 @@ const DialogInviteAdmin = defineAsyncComponent(() => import('../components/Dialo
 const DialogAddRoles = defineAsyncComponent(() => import('../components/DialogAddRoles.vue'));
 const showDialogInvite = ref(false);
 const showDialogAddRoles = ref(false);
+const DialogEditAdmin = defineAsyncComponent(() => import('../components/DialogEditAdmin.vue'));
+const showDialogEditAdmin = ref(false);
+const DialogConfirm = defineAsyncComponent(() => import('../components/DialogConfirm.vue'));
+const showDialogConfirm = ref(false);
+const selectedUserId = ref(null);
+const confirmHeader = ref('');
+const confirmMessage = ref('');
 
 onMounted(async () => {
     await context.getManageAdmin();
     await context.getRolePermission();
 })
+
+const confirmDelete = () => {
+    context.removeUserAdmin(selectedUserId.value);
+    showDialogConfirm.value = false;
+};
+
+const cancelDelete = () => {
+    showDialogConfirm.value = false;
+};
+
+const getMenuAdminItems = (data) => {
+    return [
+        {
+            label: 'Pilihan',
+            items: [
+                {
+                    label: 'Edit',
+                    icon: 'pi pi-pencil',
+                    command: () => {
+                        context.selectedMember = data
+                        showDialogEditAdmin.value = true;
+                    }
+                },
+                {
+                    label: 'Keluarkan',
+                    icon: 'pi pi-sign-out',
+                    command: () => {
+                        selectedUserId.value = data.id;
+                        confirmHeader.value = 'Konfirmasi Keluar';
+                        confirmMessage.value = `Apakah Kamu yakin ingin mengeluarkan ${data.name}?`;
+                        showDialogConfirm.value = true;
+                    }
+                }
+            ]
+        }
+    ];
+};
+
+const getMenuRoleItems = (data) => {
+    return [
+        {
+            label: 'Pilihan',
+            items: [
+                {
+                    label: 'Edit',
+                    icon: 'pi pi-pencil',
+                    command: () => {
+                        context.selectedProduct = data
+                        showDialogEditProduct.value = true;
+                    }
+                },
+                {
+                    label: 'Hapus',
+                    icon: 'pi pi-trash',
+                    command: () => deleteProduct(data.id)
+                }
+            ]
+        }
+    ];
+};
+
 </script>

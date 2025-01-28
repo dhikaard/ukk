@@ -25,7 +25,16 @@ class EditProductRequest extends FormRequest
             'fineBill' => 'required|numeric|min:0|max:100',
             'desc' => 'nullable|string',
             'urlImg' => 'nullable|image|max:2048',
-            'active' => 'required|string|in:Y,N',
+            'active' => [
+                'required',
+                'string',
+                'in:Y,N',
+                function ($attribute, $value, $fail) {
+                    if ($value === 'Y' && $this->input('stock') == 0) {
+                        $fail('Status tidak boleh tersedia jika stok adalah 0');
+                    }
+                },
+            ],
         ];
     }
 }

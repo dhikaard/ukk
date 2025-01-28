@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import callApi from "@/utils/api-connect";
 import { useToast } from 'primevue/usetoast';
-import { showSuccessEdit } from '@/utils/toast-service';
+import { showSuccessEdit, showErrorStock } from '@/utils/toast-service';
 import { ApiConstant } from "@/api-constant";
 import { useRouter } from "vue-router";
 import { useManageProductStore } from '@/stores/manage-product.store';
@@ -41,6 +41,10 @@ export const useEditProductStore = defineStore({
   }),
   actions: {
     async editProduct(formData) {
+      if (this.stock === 0 && this.active === 'Y') {
+        showErrorStock(this.toast);
+        return false;
+      }
       this.loading["editProduct"] = true;
 
       const result = await callApi({
@@ -58,6 +62,7 @@ export const useEditProductStore = defineStore({
         return product;
       }
       this.loading["editProduct"] = false;
+      return true;
     },
     async getBrand() {
       this.loading["getBrand"] = true;

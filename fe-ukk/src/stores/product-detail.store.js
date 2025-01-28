@@ -5,8 +5,8 @@ import { showSuccessRemove } from '@/utils/toast-service';
 import callApi from "@/utils/api-connect";
 import { ApiConstant } from "@/api-constant";
 
-export const useManageProductStore = defineStore({
-  id: "manage-product.store",
+export const useProductDetailStore = defineStore({
+  id: "product-detail.store",
   state: () => ({
     getApi: ApiConstant.GET_PRODUCTS,
     brandApi: ApiConstant.GET_BRAND_FOR_ADD_PRODUCT,
@@ -31,7 +31,7 @@ export const useManageProductStore = defineStore({
       this.limit = event.rows;
       this.getProducts();
   },
-    async getProducts() {
+    async getProducts(productCode) {
       this.loading["getProducts"] = true;
       const payload = {
         api: this.getApi,
@@ -66,6 +66,7 @@ export const useManageProductStore = defineStore({
         this.totalRecords = result.body.totalRecords;
         this.loading["getProducts"] = false;
         this.dataTable = products;
+        this.selectedProduct = products.find(p => p.productCode === productCode) || {};
 
         return products;
       }
@@ -108,18 +109,6 @@ export const useManageProductStore = defineStore({
         return categories;
       }
       this.loading["getCtgr"] = false;
-    },
-    async removeProduct(productId) {
-      this.loading["removeProduct"] = true;
-      const payload = {
-        api: ApiConstant.REMOVE_PRODUCT,
-        body: { productId },
-      };
-      const result = await callApi(payload);
-      showSuccessRemove(this.toast);
-      this.getProducts();
-      this.loading["removeProduct"] = false;
-      return result.isOk;
     },
   },
 });

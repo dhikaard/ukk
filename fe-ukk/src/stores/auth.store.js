@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import callApi from '@/utils/api-connect';
+import { useToast } from 'primevue/usetoast';
+import { showSuccessRegister, showSuccessResetPassword, showErrorOtp, showSuccessSendOtp } from '@/utils/toast-service';
 import { ApiConstant } from '@/api-constant';
 import { useRouter } from 'vue-router';
 import local from '@/utils/local-storage';
@@ -9,6 +11,11 @@ export const useAuthStore = defineStore({
   state: () => ({
     loginApi: ApiConstant.LOGIN,
     registApi: ApiConstant.REGISTER,
+    passwordEmailApi: ApiConstant.PASSWORD_EMAIL,
+    passwordResetApi: ApiConstant.PASSWORD_RESET,
+    sendOtpApi: ApiConstant.SEND_OTP,
+    verifyOtpApi: ApiConstant.VERIFY_OTP,
+    toast: useToast(),
     name: '',
     email: '',
     password: '',
@@ -19,6 +26,13 @@ export const useAuthStore = defineStore({
     permissions: [],
     router: useRouter(),
     loading: {},
+    showDialogConfirm: false,
+    confirmHeader: '',
+    confirmMessage: '',
+    confirmIcon: 'pi pi-info',
+    confirmIconColor: 'text-blue-700',
+    confirmBgColor: 'bg-blue-100',
+    confirmAcceptColor: 'w-full p-button-primary',
   }),
   actions: {
     async login() {
@@ -47,7 +61,7 @@ export const useAuthStore = defineStore({
         local.set('token', this.accessToken);
         local.set('user', JSON.stringify(user));
         local.set('permissions', JSON.stringify(this.permissions));
-        
+
         this.router.push({ name: 'home' });
         this.loading['login'] = false;
 
@@ -81,13 +95,84 @@ export const useAuthStore = defineStore({
           roleName: data.role_name,
           code: data.code
         }));
-        
+        showSuccessRegister(this.toast);
         this.router.push({ name: 'login' });
         this.loading['regist'] = false;
 
         return user;
       }
       this.loading['regist'] = false;
+    },
+
+    async sendResetLink(email) {
+      this.loading['sendResetLink'] = true;
+      const payload = {
+        api: this.passwordEmailApi,
+        body: { email },
+      };
+      const result = await callApi(payload);
+      if (result.isOk) {
+        this.confirmHeader = 'Email Terkirim';
+        this.confirmMessage = 'Instruksi reset kata sandi telah dikirim ke email Anda.';
+        this.confirmIcon = 'pi pi-info';
+        this.confirmIconColor = 'text-blue-700';
+        this.confirmBgColor = 'bg-blue-100';
+        this.confirmAcceptColor = 'w-full p-button-primary';
+      } else {
+        this.confirmHeader = 'Error';
+        this.confirmMessage = 'Terjadi kesalahan saat mengirim email. Silakan coba lagi.';
+        this.confirmIcon = 'pi pi-times';
+        this.confirmIconColor = 'text-red-700';
+        this.confirmBgColor = 'bg-red-100';
+        this.confirmAcceptColor = 'w-full p-button-danger';
+      }
+      this.showDialogConfirm = true;
+      this.loading['sendResetLink'] = false;
+    },
+
+    async resetPassword(token, email, password, passwordConfirmation) {
+      this.loading['resetPassword'] = true;
+      const payload = {
+        api: this.passwordResetApi,
+        body: {
+          token,
+          email,
+          password,
+          password_confirmation: passwordConfirmation,
+        },
+      };
+      const result = await callApi(payload);
+      if (result.isOk) {
+        showSuccessResetPassword(this.toast);
+        this.router.push({ name: 'login' });
+      }
+      this.loading['resetPassword'] = false;
+    },
+
+    async sendOtp(email) {
+      this.loading['sendOtp'] = true;
+      const payload = {
+        api: this.sendOtpApi,
+        body: { email },
+      };
+      const result = await callApi(payload);
+      this.loading['sendOtp'] = false;
+      return result;
+    },
+
+    async verifyOtp(email, otp) {
+      this.loading['verifyOtp'] = true;
+      const payload = {
+        api: this.verifyOtpApi,
+        body: { email, otp },
+      };
+      const result = await callApi(payload);
+      if (!result.isOk) {
+        showErrorOtp(this.toast);
+        this.loading['verifyOtp'] = false;
+        return;
+      }
+      this.loading['verifyOtp'] = false;
     },
   },
   getters: {

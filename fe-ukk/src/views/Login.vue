@@ -6,23 +6,23 @@
                     <img src="../assets/logo.jpg" alt="Image" height="50">
                     <span class="philosopher-regular text-2xl">AW KAMERA</span>
                 </div>
-                <div class="text-900 text-3xl font-medium mb-3">Selamat Datang!</div>
-                <span class="text-600 font-medium mr-2">Belum punya akun?</span>
+                <div class="text-2xl font-semibold mb-2 mt-2">Selamat Datang!</div>
+                <span class="text-gray-500 mb-6 mr-1">Belum punya akun?</span>
                 <a class="font-medium no-underline text-blue-500 cursor-pointer hover:underline"
                     @click="goToRegister">Yuk buat!</a>
             </div>
             <div>
                 <div class="mb-3">
                     <label for="email" class="block text-900 font-medium mb-2">Email</label>
-                    <InputText id="email" v-model="context.email" type="text" placeholder="Alamat Email"
+                    <InputText id="email" v-model="context.email" type="text" placeholder="example@gmail.com" required
                         :invalid="loginFailed" class="w-full" />
                     <small v-if="loginFailed" class="p-error">
                         {{ 'Email Anda tidak sesuai.' }}
                     </small>
                 </div>
                 <div class="mb-3">
-                    <label for="password" class="block text-900 font-medium mb-2">Password</label>
-                    <InputText id="name" v-model="context.password" type="password" placeholder="Password"
+                    <label for="password" class="block text-900 font-medium mb-2">Kata Sandi</label>
+                    <InputText id="name" v-model="context.password" type="password" placeholder="••••••••"
                         class="w-full" :invalid="loginFailed" />
                     <small v-if="loginFailed" class="p-error">
                         {{ 'Password Anda tidak sesuai.' }}
@@ -33,7 +33,7 @@
                         <Checkbox inputId="rememberme" :binary="true" v-model="checked" class="mr-2"></Checkbox>
                         <label for="rememberme" class="cursor-pointer">Ingat saya</label>
                     </div>
-                    <a class="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer hover:underline">Lupa
+                    <a @click="goToResetPassword" class="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer hover:underline">Lupa
                         password?</a>
                 </div>
                 <Button label="Masuk" :disabled="context.isLoginDisabled" :loading="context.loading['login']"
@@ -57,6 +57,10 @@ const loginFailed = ref(false);
 
 const goToRegister = () => {
     router.push({ name: 'register' });
+};
+
+const goToResetPassword = () => {
+    router.push({ name: 'resetPassword' });
 };
 
 const handleLogin = async () => {

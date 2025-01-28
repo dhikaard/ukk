@@ -9,15 +9,14 @@
                         class="w-3rem h-3rem border-circle flex justify-content-center align-items-center bg-blue-100 mr-3">
                         <i class="pi pi-shopping-bag text-blue-700 text-2xl"></i>
                     </span>
-                    <div class="flex flex-column">
-                        <p class="font-semibold text-xl mt-0 mb-2 text-900">Edit Barang</p>
-                        <p class="font-normal text-base mt-0 mb-3 text-600">Ubah data barang untuk disewakan!
-                        </p>
-                    </div>
                 </div>
             </div>
         </template>
-        <section>
+        <section class="flex flex-column w-full">
+            <p class="font-semibold text-xl mt-0 mb-2 text-900">Edit Barang</p>
+            <p class="font-normal text-base mt-0 mb-3 text-600">Ubah data barang untuk disewakan!
+            </p>
+            <Divider class="w-full"></Divider>
             <div class="grid formgrid p-fluid">
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="city" class="font-medium text-900">Nama Barang</label>
@@ -26,19 +25,23 @@
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="city" class="font-medium text-900">Merk</label>
+                    <i class="text-gray-500 pi pi-info-circle text-sm ml-1"
+                        v-tooltip.right="'Mengetik akan menambah sebuah opsi baru.'"></i>
                     <Dropdown :loading="context.loading['getBrand']" v-model="context.brandId" editable
                         :options="context.brandOptions" optionLabel="brandName" optionValue="id" placeholder="Canon"
                         emptyMessage="Tidak ada opsi yang tersedia" />
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="state" class="font-medium text-900">Kategori</label>
+                    <i class="text-gray-500 pi pi-info-circle text-sm ml-1"
+                        v-tooltip.right="'Mengetik akan menambah sebuah opsi baru.'"></i>
                     <Dropdown :loading="context.loading['getCtgr']" v-model="context.ctgrId" editable
                         :options="context.ctgrOptions" optionLabel="ctgrName" optionValue="id" placeholder="Kamera"
                         emptyMessage="Tidak ada opsi yang tersedia" />
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="city" class="font-medium text-900">Stok</label>
-                    <InputNumber v-model="context.stock" showButtons buttonLayout="horizontal" :min="1" placeholder="1">
+                    <InputNumber v-model="context.stock" showButtons buttonLayout="horizontal" :min="0" placeholder="1">
                         <template #incrementbuttonicon>
                             <span class="pi pi-plus" />
                         </template>
@@ -61,7 +64,8 @@
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="status" class="font-medium text-900">Status</label>
-                    <SelectButton v-model="context.active" :options="context.statusOptions" optionLabel="label" optionValue="value" aria-labelledby="basic" />
+                    <SelectButton v-model="context.active" :options="context.statusOptions" optionLabel="label"
+                        optionValue="value" aria-labelledby="basic" />
                 </div>
                 <div class="field mb-4 col-12">
                     <label for="desc" class="font-medium text-900">Keterangan</label>
@@ -154,9 +158,9 @@ const handleEditProduct = async () => {
         formData.append('urlImg', file);
     });
 
-    await context.editProduct(formData);
+    const isValid = await context.editProduct(formData);
 
-    if (!context.loading['editProduct']) {
+    if (isValid && !context.loading['editProduct']) {
         emit('update:visible', false);
     }
 };

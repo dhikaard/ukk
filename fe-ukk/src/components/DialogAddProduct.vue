@@ -9,15 +9,16 @@
                         <i class="pi pi-shopping-bag text-blue-700 text-2xl"></i>
                     </span>
                     <div class="flex flex-column">
-                        <p class="font-semibold text-xl mt-0 mb-2 text-900">Tambah Barang</p>
-                        <p class="font-normal text-base mt-0 mb-3 text-600">Tambah barang untuk disewakan!
-                        </p>
                     </div>
                 </div>
             </div>
         </template>
-        <section>
+        <section class="flex flex-column w-full">
+            <p class="font-semibold text-xl mt-0 mb-2 text-900">Tambah Barang</p>
+            <p class="font-normal text-base mt-0 mb-3 text-600">Tambah barang untuk disewakan!
+            </p>
             <div class="grid formgrid p-fluid">
+                <Divider class="w-full"></Divider>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="city" class="font-medium text-900">Nama Barang</label>
                     <InputText v-model="context.productName" id="city" type="text"
@@ -25,12 +26,14 @@
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="city" class="font-medium text-900">Merk</label>
+                    <i class="text-gray-500 pi pi-info-circle text-sm ml-1" v-tooltip.right="'Mengetik akan menambah sebuah opsi baru.'"></i>
                     <Dropdown :loading="context.loading['getBrand']" v-model="context.brandId" editable
                         :options="context.brandOptions" optionLabel="brandName" optionValue="id" placeholder="Canon"
                         emptyMessage="Tidak ada opsi yang tersedia" />
                 </div>
                 <div class="field mb-4 col-12 md:col-6">
                     <label for="state" class="font-medium text-900">Kategori</label>
+                    <i class="text-gray-500 pi pi-info-circle text-sm ml-1" v-tooltip.right="'Mengetik akan menambah sebuah opsi baru.'"></i>
                     <Dropdown :loading="context.loading['getCtgr']" v-model="context.ctgrId" editable
                         :options="context.ctgrOptions" optionLabel="ctgrName" optionValue="id" placeholder="Kamera"
                         emptyMessage="Tidak ada opsi yang tersedia" />
@@ -154,9 +157,14 @@ const handleAddProduct = async () => {
     await context.addProduct(formData);
 
     if (!context.loading['addProduct']) {
-        emit('update:visible', false);  // Use `emit` here instead of `$emit`
+        emit('update:visible', false);  
     }
 };
 
-
 </script>
+
+<style>
+.p-badge.p-badge-warning {
+    background-color: #3b82f6;
+}
+</style>

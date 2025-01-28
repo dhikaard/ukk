@@ -108,7 +108,7 @@
                             </p>
                         </template>
                     </Column>
-                    <Column style="min-width:10rem">
+                    <Column style="min-width:18rem">
                         <template #header>
                             <span class="font-semibold text-sm text-color-secondary">Keterangan</span>
                         </template>
@@ -149,6 +149,9 @@
         </section>
         <DialogAddProduct v-if="showDialogAddProduct" v-model:visible="showDialogAddProduct" />
         <DialogEditProduct v-if="showDialogEditProduct" v-model:visible="showDialogEditProduct" />
+        <DialogConfirm v-if="showDialogConfirm" v-model:visible="showDialogConfirm" :acceptLabel="'Hapus'"
+            :onAccept="confirmDelete" :onReject="cancelDelete" :header="confirmHeader" :message="confirmMessage"
+            :acceptLoading="context.loading['removeProduct']" />
     </div>
 </template>
 
@@ -164,6 +167,11 @@ const DialogAddProduct = defineAsyncComponent(() => import('../components/Dialog
 const showDialogAddProduct = ref(false);
 const DialogEditProduct = defineAsyncComponent(() => import('../components/DialogEditProduct.vue'));
 const showDialogEditProduct = ref(false);
+const DialogConfirm = defineAsyncComponent(() => import('../components/DialogConfirm.vue'));
+const showDialogConfirm = ref(false);
+const selectedProductId = ref(null);
+const confirmHeader = ref('');
+const confirmMessage = ref('');
 
 const getMenuItems = (data) => {
     return [
@@ -174,26 +182,35 @@ const getMenuItems = (data) => {
                     label: 'Edit',
                     icon: 'pi pi-pencil',
                     command: () => {
-                        edit.selectedProduct = data
+                        edit.selectedProduct = data;
                         showDialogEditProduct.value = true;
                     }
                 },
                 {
                     label: 'Hapus',
                     icon: 'pi pi-trash',
-                    command: () => deleteProduct(data.id)
+                    command: () => {
+                        selectedProductId.value = data.id;
+                        confirmHeader.value = 'Konfirmasi Hapus';
+                        confirmMessage.value = `Apakah Anda yakin ingin menghapus produk ${data.productName}?`;
+                        showDialogConfirm.value = true;
+                    }
                 }
             ]
         }
     ];
 };
 
-const deleteProduct = (id) => {
-    context.removeProduct(id);
+const confirmDelete = () => {
+    context.removeProduct(selectedProductId.value);
+    showDialogConfirm.value = false;
+};
+
+const cancelDelete = () => {
+    showDialogConfirm.value = false;
 };
 
 onMounted(async () => {
     await context.getProducts();
-})
-
+});
 </script>

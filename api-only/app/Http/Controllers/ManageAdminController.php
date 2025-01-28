@@ -17,9 +17,13 @@ class ManageAdminController extends Controller
     public function editUserAdmin(EditAdmin $request)
     {
         $user = Auth::user();
-        $ownerRoleId = DB::table('roles')->where('role_name', 'Owner')->value('role_id');
-        if ($user->role_id !== $ownerRoleId) {
-            return response()->json(['error' => 'Anda bukan Owner'], 403);
+        $hasPermission = DB::table('permissions')
+            ->where('role_id', $user->role_id)
+            ->where('permission_name', 'manageAdmin')
+            ->exists();
+
+        if (!$hasPermission) {
+            return response()->json(['error' => 'Anda tidak memiliki izin untuk mengelola admin'], 403);
         }
 
         DB::table('users')
@@ -42,7 +46,7 @@ class ManageAdminController extends Controller
                 $query->where('A.email', 'like', "%$keyword%")
                     ->orWhere('A.name', 'like', "%$keyword%");
             })
-            ->select('A.*', 'B.role_name')
+            ->select('A.*', 'B.role_name', 'B.role_id')
             ->orderBy('B.authority')
             ->orderBy('A.name')
             ->get();
@@ -66,7 +70,7 @@ class ManageAdminController extends Controller
                                 WHEN B.permission_name = 'manageProduct' THEN 'Kelola Barang'
                                 ELSE B.permission_name
                             END
-                        , ', ') 
+                        , ', ')
                         FROM permissions as B
                         WHERE B.role_id = A.role_id
                     ), '') as permission_name

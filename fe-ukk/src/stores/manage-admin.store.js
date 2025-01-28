@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import callApi from '@/utils/api-connect';
+import { useToast } from 'primevue/usetoast';
+import { showSuccessEdit, showSuccessRemove } from '@/utils/toast-service';
 import { ApiConstant } from '@/api-constant';
 import { useRouter } from 'vue-router';
 
@@ -9,9 +11,11 @@ export const useManageAdminStore = defineStore({
     adminApi: ApiConstant.GET_MANAGE_ADMIN,
     roleApi: ApiConstant.GET_ROLE_PERMISSION,
     userForAddApi: ApiConstant.GET_USER_FOR_ADD_ADMIN,
+    toast: useToast(),
+    roleUser: 3,
     keyword: '',
-    dataTableAdmin: {},
-    dataTableRoles: {},
+    dataTableAdmin: [],
+    dataTableRoles: [],
     userOptions: null,
     selectedMember: null,
     selectedRole: null,
@@ -36,6 +40,7 @@ export const useManageAdminStore = defineStore({
           phone: data.phone,
           name: data.name,
           email: data.email,
+          roleId: data.role_id,
           roleName: data.role_name,
           code: data.code,
           updatedAt: data.updated_at
@@ -110,7 +115,26 @@ export const useManageAdminStore = defineStore({
         },
       };
       const result = await callApi(payload);
+      showSuccessEdit(this.toast);
       this.loading['editUser'] = false;
+      this.getManageAdmin();
+      this.getRolePermission();
+
+      return result.isOk;
+    },
+
+    async removeUserAdmin(userId) {
+      this.loading['removeAdmin'] = true;
+      const payload = {
+        api: ApiConstant.EDIT_USER_ADMIN,
+        body: {
+          user_id: userId,
+          role_id: this.roleUser
+        },
+      };
+      const result = await callApi(payload);
+      showSuccessRemove(this.toast);
+      this.loading['removeAdmin'] = false;
       this.getManageAdmin();
       this.getRolePermission();
 

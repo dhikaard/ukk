@@ -59,4 +59,24 @@ export const ApiConstant = {
         method: 'GET',
         keyList: ''
     },
+    PASSWORD_EMAIL: {
+        path: 'password/email',
+        method: 'POST',
+        keyList: ''
+    },
+    PASSWORD_RESET: {
+        path: 'password/reset',
+        method: 'POST',
+        keyList: ''
+    },
+    SEND_OTP: {
+        path: 'otp/send',
+        method: 'POST',
+        keyList: ''
+    },
+    VERIFY_OTP: {
+        path: 'otp/verify',
+        method: 'POST',
+        keyList: ''
+    },
 };

@@ -57,7 +57,7 @@ import { useRouter } from 'vue-router';
 import Avatar from './Avatar.vue';
 import ProfileCard from './ProfileCard.vue';
 import CommandMenu from './CommandMenu.vue';
-import local from '../utils/local-storage';
+import local from '@/utils/local-storage';
 
 const router = useRouter();
 const profileCardVisible = ref(false);

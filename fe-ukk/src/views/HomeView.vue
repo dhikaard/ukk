@@ -180,9 +180,9 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from 'vue-router';
 import { toCurrencyLocale } from '../utils/currency';
-import { useManageProductStore } from '@/stores/manage-product.store';
+import { useProductRentStore } from '@/stores/product-rent.store';
 
-const context = useManageProductStore();
+const context = useProductRentStore();
 const layout = ref('grid');
 const selectedBrand_1 = ref([]);
 const rangeValues = ref([0, 2000000]);

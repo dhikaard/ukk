@@ -5,8 +5,8 @@ import { showSuccessRemove } from '@/utils/toast-service';
 import callApi from "@/utils/api-connect";
 import { ApiConstant } from "@/api-constant";
 
-export const useManageProductStore = defineStore({
-  id: "manage-product.store",
+export const useProductRentStore = defineStore({
+  id: "product-rent.store",
   state: () => ({
     getApi: ApiConstant.GET_PRODUCTS,
     brandApi: ApiConstant.GET_BRAND_FOR_ADD_PRODUCT,
@@ -23,7 +23,7 @@ export const useManageProductStore = defineStore({
     brandOptions: [],
     ctgrOptions: [],
     priceRange: [0, 2000000],
-    selectedProduct: {},
+    selectedProduct: [],
   }),
   actions: {
     onPage(event) {
@@ -108,18 +108,6 @@ export const useManageProductStore = defineStore({
         return categories;
       }
       this.loading["getCtgr"] = false;
-    },
-    async removeProduct(productId) {
-      this.loading["removeProduct"] = true;
-      const payload = {
-        api: ApiConstant.REMOVE_PRODUCT,
-        body: { productId },
-      };
-      const result = await callApi(payload);
-      showSuccessRemove(this.toast);
-      this.getProducts();
-      this.loading["removeProduct"] = false;
-      return result.isOk;
     },
   },
 });
