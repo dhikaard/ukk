@@ -7,7 +7,7 @@ import local  from '@/utils/local-storage';
 export const useLoginStore = defineStore({
   id: 'login.store',
   state: () => ({
-    api: '',
+    api: ApiConstant.LOGIN,
     email: '',
     password: '',
     accessToken: '',
@@ -28,16 +28,7 @@ export const useLoginStore = defineStore({
       const result = await callApi(payload);
       if (result.isOk) {
         this.accessToken = result.body.access_token;
-        const user = result.body.user.map((data) => ({
-          id: data.user_id,
-          userCode: data.user_code,
-          address: data.address,
-          phone: data.phone,
-          name: data.name,
-          email: data.email,
-          roleName: data.role_name,
-          code: data.code
-        }));
+        const user = result.body.user;
         local.set('token', this.accessToken);
         local.set('user', JSON.stringify(user));
         this.router.push({ name: 'home' });
