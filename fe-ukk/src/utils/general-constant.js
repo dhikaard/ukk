@@ -11,6 +11,5 @@ export const GeneralConstants = {
   FORBIDDEN: 403,
   NULL: null,
   UNDEFINED: undefined,
-  ROW_PERPAGE_OPTION: [5, 25, 50, 100],
-  DEFAULT_ROWS: 25
+  DEFAULT_ROWS: 10
 };

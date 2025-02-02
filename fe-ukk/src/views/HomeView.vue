@@ -1,155 +1,127 @@
 <template>
 <div class="surface-section">
-  <CommandMenu :visible="commandMenuVisible" @update:visible="commandMenuVisible = $event" />
-  <div class="block lg:hidden lg:w-3 px-2 md:px-3 mt-3">
-    <IconField iconPosition="left" class="w-12">
-      <InputIcon class="pi pi-search"> </InputIcon>
-      <InputText v-model="context.keyword" placeholder="Cari menu, pintasan, tema, dan yang lainnya.." class="w-full"  @click="showCommandMenu"/>
-    </IconField>
-  </div>
-  <div class="surface-section py-7 px-2 md:px-3">
-    <div>
-      <div class="text-900 font-bold text-3xl text-center">
-        Adventure, Outdoor & Camping
-        <p class="text-600 font-normal text-base text-center">
-          Kami menyediakan berbagai macam perlengkapan untuk kegiatan outdoor Anda
-        </p>
+  <!-- Hero Section -->
+  <div class="hero-wrapper relative">
+    <div class="hero-section w-full min-h-screen flex align-items-center" 
+         style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/hero-bg.jpg') no-repeat center center; background-size: cover;">
+      <div class="px-4 py-8 md:px-6 lg:px-8 w-full">
+        <div class="text-center">
+          <h1 class="text-white font-bold text-6xl mb-4">Amfibi Outdoor</h1>
+          <p class="text-white font-medium text-2xl mb-6">Perlengkapan Outdoor Berkualitas untuk Petualanganmu</p>
+          <Button 
+            label="Sewa Sekarang" 
+            icon="pi pi-arrow-down" 
+            class="p-button-lg" 
+            @click="scrollToProducts" 
+          />
+        </div>
       </div>
     </div>
-    <Divider class="w-full"></Divider>
-    <div class="grid grid-nogutter">
-      <div class="col-12 flex flex-column lg:flex-row align-items-center mb-1 gap-2">
-          <Button class="p-button-rounded p-button-primary text-white px-5 py-3 h-2rem lg:h-2rem w-full lg:w-auto border-none" label="Filters" :icon="openDropdown ? 'ml-3 pi pi-chevron-down' : 'ml-3 pi pi-chevron-up'" iconPos="right"
-              v-styleclass="{ selector: '.filter-container', enterClass:'hidden', enterActiveClass:'slidedown', leaveToClass:'hidden', leaveActiveClass:'slideup' }" @click="openDropdown = !openDropdown"></Button>
-              <div class="grid flex-column lg:flex-row w-full h-full">
-                <div class="col-12 lg:col flex align-items-center flex-wrap" style="column-gap: 5px; row-gap:5px;">
-                  <Chip v-for="filter of context.selectedFilters" :key="filter" :label="filter" removable class="mr-3 h-auto px-4 mt-3 lg:mt-0" removeIcon="pi pi-times" :style="{'border-radius':'50px'}"
-                        @click="context.selectedFilters.splice(context.selectedFilters.indexOf(filter.toString()), 1) && context.selectedCategory.splice(context.selectedCategory.indexOf(filter), 1)">
-                  </Chip>
-                  <a v-ripple v-if="context.selectedFilters.length > 0" tabindex="0" class="text-900 cursor-pointer text-center px-3 py-2 mt-3 lg:mt-0 border-1 border-200 lg:border-none inline-block hover:bg-primary hover:border-primary transition-duration-150 p-ripple" style="border-radius:50px; max-width: 7rem;" @click="context.selectedFilters = []; context.selectedCategory = [];">Clear All</a>
-                </div>
-              </div>
+    <WaveDivider fill-color="var(--surface-card)" />
+  </div>
+
+  <!-- Featured Products -->
+  <div id="featured-products" class="surface-card relative">
+    <div class="py-8 px-4 md:px-6 lg:px-8">
+      <div class="text-center mb-6">
+        <h2 class="text-900 font-bold text-4xl mb-3">Produk Unggulan</h2>
+        <p class="text-600 font-medium text-xl">Peralatan Terbaik untuk Kegiatan Outdoor Anda</p>
+      </div>
+      
+      <div class="grid">
+        <div v-for="product in featuredProducts" :key="product.id" class="col-12 md:col-4 p-3">
+          <div class="surface-card p-4 border-round shadow-2 cursor-pointer transition-colors transition-duration-300 hover:surface-hover"
+               @click="showDetail(product)">
+            <img :src="product.image" :alt="product.name" class="w-full border-round mb-3" style="height: 200px; object-fit: cover;">
+            <div class="text-900 font-medium text-xl mb-2">{{ product.name }}</div>
+            <div class="text-600 mb-3">{{ product.category }}</div>
+            <div class="flex align-items-center justify-content-between">
+              <span class="text-900 font-medium text-xl">{{ toCurrencyLocale(product.price) }}/hari</span>
+              <Tag :value="product.inventoryStatus === 'INSTOCK' ? 'Tersedia' : 'Kosong'"
+                   :severity="getSeverity(product)" />
             </div>
-            <div class="filter-container col-12 overflow-hidden transition-all transition-duration-400 transition-ease-in-out">
-  <div class="grid grid-nogutter flex-column lg:flex-row">
-    <!-- Filter -->
-    <div class="grid formgrid flex-auto lg:flex-1 col-12 mt-0 lg:mt-2 mr-0 lg:mr-4 px-4 flex-column border-1 surface-border border-round">
-      <p class="text-900 font-medium mb-3 flex justify-content-between w-full transition-duration-150">Filter Produk</p>
-
-      <!-- Search Field -->
-        <IconField iconPosition="left">
-          <InputIcon class="pi pi-search" />
-          <InputText v-model="context.keyword" placeholder="Cari Barang" class="w-full" />
-        </IconField>
-
-      <!-- Filter Kategori -->
-      <div class="grid mt-4">
-        <div class="col-6">
-          <FloatLabel class="w-full">
-            <MultiSelect id="category" filter v-model="context.category" :options="context.categoryOptions" optionLabel="name" :maxSelectedLabels="3" class="w-full" />
-            <label for="category" class=" -ml-1 text-sm">Pilih Kategori</label>
-          </FloatLabel>
-        </div>
-
-        <!-- Dropdown Urutkan -->
-        <div class="col-6">
-          <FloatLabel class="w-full">
-            <Dropdown v-model="context.priceOrder" :options="context.priceOrderOptions" optionLabel="name" placeholder="Urutkan" class="w-full" showClear/>
-            <label for="priceOrder" class=" -ml-1 text-sm">Urutkan Berdasarkan</label>
-          </FloatLabel>
+          </div>
         </div>
       </div>
-
-      <!-- Filter Button -->
-      <div class="flex flex-column mt-3">
-        <Button label="Terapkan Filter" icon="pi pi-filter" class="text-white p-button-rounded w-full w-auto p-button-primary h-2rem mb-2" @click="applyFilter" />
+      
+      <div class="flex justify-content-center mt-4">
+        <Button label="Lihat Semua Produk" icon="pi pi-arrow-right" outlined @click="router.push('/sewa')" />
       </div>
     </div>
   </div>
-</div>
 
-      <div class="w-full border-2 border-dashed border-round-xs surface-border surface-section mt-5 ">
-        <DataView :value="context.product" :layout="context.layout" class="border-round-lg">
-          <template #header>
-            <div class="flex justify-content-between w-full align-items-center border-round-lg">
-              <Paginator :rows="context.rows" :totalRecords="context.totalRecords" @page="context.onPageChange"
-                :template="{
-                  '640px': 'PrevPageLink CurrentPageReport NextPageLink',
-                  '960px': 'FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink',
-                  '1300px': 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink',
-                  default: 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink JumpToPageDropdown',
-                }" class="-mx-3" />
-              <DataViewLayoutOptions v-model="context.layout" />
-            </div>
-          </template>
+    <!-- Benefits Section -->
+    <div class="benefits-section relative">
+    <WaveDivider fill-color="var(--surface-card)" flip />
+    <div class="py-8 px-4 md:px-6 lg:px-8">
+      <div class="text-center mb-6">
+        <h2 class="font-bold text-4xl mb-3">Mengapa Sewa di Kami?</h2>
+        <p class="alpha-80 font-medium text-xl">Keuntungan Menyewa Peralatan di Amfibi Outdoor</p>
+      </div>
+      
+      <div class="grid">
+        <div v-for="(benefit, index) in benefits" :key="index" class="col-12 md:col-3 p-3">
+          <div class="surface-card p-4 border-round shadow-2 h-full hover:shadow-8 transition-all transition-duration-300">
+            <i :class="benefit.icon + ' text-4xl text-primary mb-3'"></i>
+            <div class="text-900 font-medium text-xl mb-3">{{ benefit.title }}</div>
+            <p class="text-600 line-height-3">{{ benefit.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <WaveDivider fill-color="var(--surface-ground)" />
+  </div>
 
-          <template #list="slotProps">
-            <div class="grid grid-nogutter">
-              <div v-for="(item, index) in slotProps.items" :key="index" class="col-12">
-                <div class="flex flex-column sm:flex-row sm:align-items-center p-4 gap-3"
-                  :class="{ 'border-top-1 surface-border': index !== 0 }">
-                  <div class="md:w-10rem relative">
-                    <img class="border-round w-full"
-                      :src="`https://primefaces.org/cdn/primevue/images/product/${item.image}`" :alt="item.name"
-                      style="max-width: 500px" />
-                    <Tag :value="item.inventoryStatus" :severity="getSeverity(item)" class="absolute"
-                      style="left: 4px; top: 4px"></Tag>
-                  </div>
-                  <div
-                    class="flex flex-column md:flex-row justify-content-between md:align-items-center flex-1 gap-4">
-                    <div class="flex flex-row md:flex-column justify-content-between align-items-start gap-2">
-                      <div>
-                        <span class="font-medium text-secondary text-sm">{{ item.category }}</span>
-                        <div class="text-lg font-medium text-900 mt-2">{{ item.name }}</div>
-                      </div>
-                    </div>
-                    <div class="flex flex-column md:align-items-end gap-5">
-                      <span class="text-xl font-semibold text-900">${{ item.price }}</span>
-                      <div class="flex flex-row-reverse md:flex-row gap-2">
-                        <Button @click="showDetail(item)" icon="pi pi-shopping-cart" label="Lihat Detail"
-                          :disabled="item.inventoryStatus === 'OUTOFSTOCK'"
-                          class="flex-auto md:flex-initial white-space-nowrap"></Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
-          <template #grid="slotProps">
-            <div class="grid grid-nogutter">
-              <div v-for="(item, index) in slotProps.items" :key="index" class="col-12 sm:col-6 md:col-4 p-2">
-                <div class="p-4 border-1 surface-border surface-card border-round flex flex-column">
-                  <div class="surface-50 flex justify-content-center border-round p-3">
-                    <div class="relative mx-auto">
-                      <img class="border-round w-full"
-                        :src="`https://primefaces.org/cdn/primevue/images/product/${item.image}`" :alt="item.name"
-                        style="max-width: 300px" />
-                      <Tag :value="item.inventoryStatus" :severity="getSeverity(item)" class="absolute"
-                        style="left: 4px; top: 4px"></Tag>
-                    </div>
-                  </div>
-                  <div class="pt-4">
-                    <div class="flex flex-row justify-content-between align-items-start gap-2">
-                      <div>
-                        <span class="font-medium text-secondary text-sm">{{ item.category }}</span>
-                        <div class="text-lg font-medium text-900 mt-1">{{ item.name }}</div>
-                      </div>
-                    </div>
-                    <div class="flex flex-column gap-4 mt-4">
-                      <span class="text-2xl font-semibold text-900">${{ item.price }}</span>
-                      <div class="flex gap-2">
-                        <Button @click="showDetail(item)" icon="pi pi-shopping-cart" label="Lihat Detail"
-                          :disabled="item.inventoryStatus === 'OUTOFSTOCK'"
-                          class="flex-auto white-space-nowrap"></Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
-        </DataView>
+  
+  <!-- Terms Section -->
+  <div class="surface-ground relative">
+    
+    <div class="surface-ground py-8 px-4 md:px-6 lg:px-8">
+      <WaveDivider fill-color="var(--surface-card)" />
+      <div class="text-center mb-6">
+        <h2 class="text-900 font-bold text-4xl mb-3">Syarat & Ketentuan</h2>
+        <p class="text-600 font-medium text-xl">Informasi Penting untuk Penyewaan</p>
+      </div>
+      
+      <div class="grid">
+        <div v-for="(term, index) in terms" :key="index" class="col-12 md:col-4 p-3">
+          <div class="surface-card p-4 border-round shadow-2 h-full">
+            <i :class="term.icon + ' text-4xl text-primary mb-3'"></i>
+            <div class="text-900 font-medium text-xl mb-3">{{ term.title }}</div>
+            <p class="text-600 line-height-3">{{ term.description }}</p>
+          </div>
+        </div>
+      </div>
+  
+      <div class="flex justify-content-center mt-4">
+        <Button label="Lihat Detail Ketentuan" icon="pi pi-external-link" text @click="router.push('/terms')" />
+      </div>
+    </div>
+  </div>
+  
+  <!-- Location Section -->
+  <div class="surface-card relative">
+    <WaveDivider fill-color="var(--surface-card)" />
+    <div class="py-8 px-4 md:px-6 lg:px-8">
+      <div class="text-center mb-6">
+        <h2 class="text-900 font-bold text-4xl mb-3">Kunjungi Toko Kami</h2>
+      </div>
+      
+      <div class="surface-card p-4 border-round shadow-2">
+        <iframe 
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4058310.9964663917!2d105.93011345000001!3d-6.622766185472307!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e708b944ca13d91%3A0xd632b5339993b2b1!2sSewa%20Tenda%20Semarang%20Akasa%20Adv%20Rental%20Alat%20Outdoor%20Ngaliyan!5e0!3m2!1sid!2sid!4v1738499856253!5m2!1sid!2sid"
+          width="100%" 
+          height="450" 
+          style="border:0;" 
+          allowfullscreen="" 
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+  
+      <div class="mt-4 text-center">
+        <p class="text-600 mb-3">Jl. Bukit Beringin Bar., Tambakaji, Kec. Ngaliyan, Kota Semarang</p>
+        <Button label="Petunjuk Arah" icon="pi pi-map-marker" @click="openMaps" />
       </div>
     </div>
   </div>
@@ -157,46 +129,139 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useHomeViewStore } from '@/stores/home-view.store';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import CommandMenu from '@/components/CommandMenu.vue';
+import { useHomeViewStore } from '@/stores/home-view.store';
+import { toCurrencyLocale } from '@/utils/currency';
+import WaveDivider from '@/components/WaveDivider.vue';
 
 const router = useRouter();
-const context = useHomeViewStore();
-const commandMenuVisible = ref(false);
+const store = useHomeViewStore();
+const featuredProducts = ref([]);
 
-const showDetail = (data) => {
-  context.setSelectedData(data);
-  
-  console.log('context.setSelectedData', data.id);
-  const id = context.selectedData.id;
-  router.push({ name: 'detailProduct', params: { id } });
-};
+const benefits = [
+  {
+    icon: 'pi pi-money-bill',
+    title: 'Hemat Biaya',
+    description: 'Tidak perlu membeli peralatan mahal untuk kegiatan outdoor Anda'
+  },
+  {
+    icon: 'pi pi-check-circle',
+    title: 'Peralatan Berkualitas',
+    description: 'Semua peralatan terawat dan selalu dicek sebelum disewakan'
+  },
+  {
+    icon: 'pi pi-sync',
+    title: 'Fleksibel',
+    description: 'Sewa sesuai kebutuhan, tidak perlu menyimpan peralatan'
+  },
+  {
+    icon: 'pi pi-users',
+    title: 'Konsultasi Gratis',
+    description: 'Tim kami siap membantu memilih peralatan yang tepat'
+  }
+];
 
-const showCommandMenu = () => {
-    commandMenuVisible.value = true;
-};
 
-onMounted(() => {
-  context.getProducts();
-  context.updatePaginatedProducts();
+const terms = [
+  {
+    icon: 'pi pi-clock',
+    title: 'Durasi Sewa',
+    description: 'Minimum sewa 1 hari dengan pengembalian maksimal pukul 22:00 WIB.'
+  },
+  {
+    icon: 'pi pi-id-card',
+    title: 'Persyaratan',
+    description: 'Kartu identitas (KTP/SIM) dan jaminan untuk proses penyewaan.'
+  },
+  {
+    icon: 'pi pi-money-bill',
+    title: 'Pembayaran',
+    description: 'Pembayaran dilakukan di awal dengan minimal DP 50% dari total sewa.'
+  }
+];
+
+onMounted(async () => {
+  // Get featured products (maybe first 3 products)
+  await store.getProducts();
+  featuredProducts.value = store.products.slice(0, 3);
 });
 
-const getSeverity = (product) => {
-  switch (product.inventoryStatus) {
-    case "INSTOCK":
-      return "success";
+const showDetail = (product) => {
+  const slug = product.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 
-    case "LOWSTOCK":
-      return "warn";
-
-    case "OUTOFSTOCK":
-      return "danger";
-
-    default:
-      return null;
-  }
+  router.push({
+    name: 'detailProduct',
+    params: {
+      code: product.code,
+      slug: slug
+    }
+  });
 };
 
+const openMaps = () => {
+  window.open('https://www.google.com/maps/dir//Sewa+Tenda+Semarang+Akasa+Adv+Rental+Alat+Outdoor+Ngaliyan+Gg.+Ciremai+RT.02%2FRW.01,+Kedungpane+Kec.+Ngaliyan,+Kota+Semarang,+Jawa+Tengah+50189/@-7.0207142,110.3377604,9z/data=!4m5!4m4!1m0!1m2!1m1!1s0x2e708b944ca13d91:0xd632b5339993b2b1', '_blank');
+};
+
+const getSeverity = (product) => {
+  return product.inventoryStatus === 'INSTOCK' ? 'success' : 'danger';
+};
+
+const scrollToProducts = () => {
+  document.getElementById('featured-products').scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+};
 </script>
+
+<style scoped>
+.benefits-section {
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+              url('/benefits-bg.jpg') no-repeat center center;
+  background-size: cover;
+  background-attachment: fixed;
+  position: relative;
+  z-index: 1;
+  margin-top: -2px;
+  margin-bottom: -2px;
+}
+
+.benefits-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--primary-900);
+  opacity: 0.1;
+  z-index: -1;
+}
+
+
+.hero-wrapper {
+  position: relative;
+  background-color: var(--surface-ground);
+}
+
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.surface-card, .surface-ground {
+  position: relative;
+  z-index: 0;
+}
+
+/* Add more custom styles as needed */
+
+html {
+  scroll-behavior: smooth;
+}
+</style>

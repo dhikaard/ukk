@@ -11,8 +11,10 @@ import PrimeVue from 'primevue/config';
 import Ripple from 'primevue/ripple';
 import StyleClass from 'primevue/styleclass';
 import FocusTrap from 'primevue/focustrap';
-import Badge from 'primevue/badge';
+import BadgeDirective from 'primevue/badgedirective';
 import Tooltip from 'primevue/tooltip';
+import ToastService from 'primevue/toastservice';
+import Toast from 'primevue/toast';
 
 
 import { createApp } from 'vue'
@@ -22,12 +24,15 @@ import router from './router'
 
 // app.use
 const app = createApp(App)
-app.use(createPinia())
-app.use(router)
+app.use(createPinia());
+app.use(router);
+app.use(ToastService);
 app.use(PrimeVue, { ripple: true });
 
+
 // app.directive
-app.directive('badge', Badge);
+app.component('Toast', Toast);
+app.directive('badge', BadgeDirective);
 app.directive('styleclass', StyleClass);
 app.directive('ripple', Ripple);
 app.directive('focustrap', FocusTrap);

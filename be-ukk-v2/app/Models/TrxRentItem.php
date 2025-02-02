@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class TrxRentItem extends Model
 {
@@ -16,94 +18,80 @@ class TrxRentItem extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
     
-    public function item(): BelongsTo
-    {
-        return $this->belongsTo(Items::class, 'items_id');
-    }
-
     public function globalFine(): BelongsTo
     {
         return $this->belongsTo(GlobalFine::class, 'global_fine_id');
     }
 
+    public function details(): HasMany
+    {
+        return $this->hasMany(TrxRentItemDetail::class, 'trx_rent_items_id');
+    }
+
     protected $fillable = [
+        'trx_code',
         'user_id',
-        'items_id',
         'rent_start_date',
         'rent_end_date',
         'duration',
         'return_date',
         'status',
-        'qty',
-        'global_fine_id',
         'fine_amount',
-        'sub_total',
         'desc',
+        'total',
+        'total_fine_amount',
     ];
 
-    public function calculateFineAmount()
-    {
-        $now = now();
-        $rentEndDate = Carbon::parse($this->rent_end_date)->endOfDay();
-        $globalFine = $this->globalFine;
-    
-        if ($globalFine) {
-            $timeLimit = Carbon::parse($this->rent_end_date)->setTimeFrom(Carbon::parse($globalFine->time_limit));
-            $finePercentage = $globalFine->fine_percentage;
-            $fineAmount = 0;
-    
-            // Jika waktu sekarang lebih besar dari rent_end_date
-            if ($now->greaterThan($rentEndDate)) {
-                // Jika melewati time_limit, denda menjadi 100%
-                if ($now->greaterThan($timeLimit)) {
-                    $fineAmount = $this->item->price * $this->qty;
-                } else {
-                    // Jika masih dalam batas time_limit, gunakan fine_percentage
-                    $fineAmount = ($finePercentage / 100) * $this->item->price * $this->qty;
-                }
-            }
-    
-            $this->fine_amount = min($fineAmount, $this->item->price * $this->qty);
-        } else {
-            $this->fine_amount = 0;
-        }
-    }
-    
+    // public function calculateFineAmount()
+    // {
+    //     $now = now();
+    //     $rentEndDate = Carbon::parse($this->rent_end_date)->endOfDay();
+    //     $fineAmount = 0;
 
-    public function calculateDuration()
-    {
-        $startDate = Carbon::parse($this->rent_start_date)->startOfDay();
-        $endDate = Carbon::parse($this->rent_end_date)->startOfDay();
+    //     foreach ($this->details as $detail) {
+    //         $item = $detail->item;
+    //         if ($item && $item->globalFine && $now->greaterThan($rentEndDate)) {
+    //             $timeLimit = Carbon::parse($rentEndDate)
+    //                 ->setTimeFrom(Carbon::parse($item->globalFine->time_limit));
+                
+    //             if ($now->greaterThan($timeLimit)) {
+    //                 $fineAmount += $item->price * $detail->qty;
+    //             } else {
+    //                 $fineAmount += ($item->globalFine->fine_percentage / 100) * $item->price * $detail->qty;
+    //             }
+    //         }
+    //     }
 
-        if ($endDate->lessThan($startDate)) {
-            throw new \Exception('End date cannot be earlier than start date');
-        } else {
-            $this->duration = $startDate->diffInDays($endDate) + 1; // Tambahkan 1 hari untuk menyertakan hari mulai
-        }
-    }
+    //     $this->total_fine_amount = $fineAmount;
+    //     $this->save();
+    // }
 
-    public function calculateSubTotal()
-    {
-        $item = $this->item;
-        if ($item) {
-            $this->sub_total = $item->price * $this->qty * $this->duration;
-        } else {
-            $this->sub_total = 0;
-        }
-    }
+    // }
 
-    protected static function booted()
-    {
-        static::saving(function ($trxRentItem) {
-            $trxRentItem->calculateDuration();
-            $trxRentItem->calculateSubTotal();
-            $trxRentItem->calculateFineAmount();
-        });
+    // public function calculateFineAmountForDetails(array $details, string $rentEndDate, int $globalFineId): array
+    // {
+    //     $now = now();
+    //     $rentEndDate = Carbon::parse($rentEndDate)->endOfDay();
+    //     $globalFine = GlobalFine::find($globalFineId);
 
-        static::retrieved(function ($trxRentItem) {
-            $trxRentItem->calculateDuration();
-            $trxRentItem->calculateSubTotal();
-            $trxRentItem->calculateFineAmount();
-        });
-    }
+    //     if ($globalFine) {
+    //         $timeLimit = Carbon::parse($rentEndDate)->setTimeFrom(Carbon::parse($globalFine->time_limit));
+    //         $finePercentage = $globalFine->fine_percentage;
+
+    //         foreach ($details as &$detail) {
+    //             $item = Items::find($detail['items_id']);
+    //             if ($item) {
+    //                 if ($now->greaterThan($rentEndDate)) {
+    //                     if ($now->greaterThan($timeLimit)) {
+    //                         $detail['fine_amount'] = $item->price * $detail['qty'];
+    //                     } else {
+    //                         $detail['fine_amount'] = ($finePercentage / 100) * $item->price * $detail['qty'];
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return $details;
+    // }
+
 }

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TrxRentItemResource\Pages;
-use App\Models\GlobalFine;
 use App\Models\Items;
 use App\Models\TrxRentItem;
 use App\Models\User;
@@ -13,329 +12,353 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Carbon\Carbon;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 
 class TrxRentItemResource extends Resource
 {
     protected static ?string $model = TrxRentItem::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Informasi Penyewa')
-                    ->schema([
-                        Forms\Components\Grid::make(3)
-                            ->schema([
-                                Forms\Components\Select::make('user_id')
-                                    ->label('Penyewa')
-                                    ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->options(
-                                        User::where('active', true)->where('role_id', '!=', 1)->pluck('name', 'id')
-                                    ),
-                            ]),
-                    ]),
-                Forms\Components\Section::make('Detail Penyewaan')
-                    ->schema([
-                        Forms\Components\Grid::make(2)
-                            ->schema([
-                                Forms\Components\Group::make([
-                                    Forms\Components\Section::make('Inputan')
-                                        ->schema([
-                                            Forms\Components\Select::make('items_id')
-                                                ->label('Barang')
-                                                ->required()
-                                                ->searchable()
-                                                ->preload()
-                                                ->options(
-                                                    Items::where('active', true)->pluck('items_name', 'items_id')
-                                                )
-                                                ->reactive()
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateSubTotal($get, $set))
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateFineAmount($get, $set)),
-                                            Forms\Components\DateTimePicker::make('rent_start_date')
-                                                ->label('Tanggal Mulai Sewa')
-                                                ->native(false)
-                                                ->weekStartsOnMonday()
-                                                ->closeOnDateSelection()
-                                                ->displayFormat('d F Y, H:i:s')
-                                                ->format('Y-m-d H:i:s')
-                                                ->required()
-                                                ->reactive()
-                                                ->minDate(fn ($get, $livewire) => $livewire instanceof Pages\CreateTrxRentItem ? Carbon::today()->toDateString() : $get('rent_start_date'))
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateSubTotal($get, $set))
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateDuration($get, $set)),
-                                            Forms\Components\DateTimePicker::make('rent_end_date')
-                                                ->label('Tanggal Selesai Sewa')
-                                                ->native(false)
-                                                ->weekStartsOnMonday()
-                                                ->closeOnDateSelection()
-                                                ->displayFormat('d F Y, H:i:s')
-                                                ->format('Y-m-d H:i:s')
-                                                ->required()
-                                                ->reactive()
-                                                ->minDate(fn ($get, $livewire) => $livewire instanceof Pages\CreateTrxRentItem ? Carbon::today()->toDateString() : $get('rent_start_date'))
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateDuration($get, $set))
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateSubTotal($get, $set))
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateFineAmount($get, $set)),
-                                            Forms\Components\TextInput::make('qty')
-                                                ->label('Jumlah Barang')
-                                                ->required()
-                                                ->numeric()
-                                                ->reactive()
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateSubTotal($get, $set))
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateFineAmount($get, $set)),
-                                            Forms\Components\Select::make('global_fine_id')
-                                                ->label('Jenis Denda')
-                                                ->preload()
-                                                ->searchable()
-                                                ->reactive()
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateFineAmount($get, $set))
-                                                ->options(GlobalFine::pluck('fine_name', 'global_fine_id')),
-                                        ]),
+        return $form->schema([
+            // Customer Information Section
+            Forms\Components\Section::make('Informasi Penyewa')
+                ->schema([
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\TextInput::make('trx_code')
+                                ->label('Kode Transaksi')
+                                ->disabled()
+                                ->dehydrated(true),
+                            Forms\Components\Select::make('user_id')
+                                ->label('Penyewa')
+                                ->required()
+                                ->searchable()
+                                ->preload()
+                                ->options(function ($record) {
+                                    $query = User::where('active', true);
+                                    if (!$record) {
+                                        $query->where('role_id', '!=', 1);
+                                    }
+                                    return $query->pluck('name', 'id');
+                                })
+                        ]),
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\DateTimePicker::make('rent_start_date')
+                                ->label('Tanggal Mulai Sewa')
+                                ->required()
+                                ->native(false)
+                                ->displayFormat('d/m/Y H:i')
+                                ->reactive()
+                                ->afterStateUpdated(fn (Get $get, Set $set) => self::calculateDuration($get, $set)),
+                            Forms\Components\DateTimePicker::make('rent_end_date')
+                                ->label('Tanggal Selesai Sewa')
+                                ->required()
+                                ->native(false)
+                                ->displayFormat('d/m/Y H:i')
+                                ->reactive()
+                                ->afterStateUpdated(fn (Get $get, Set $set) => self::calculateDuration($get, $set)),
+                        ]),
+                    Forms\Components\Grid::make(3)
+                        ->schema([
+                            Forms\Components\TextInput::make('duration')
+                                ->label('Durasi (hari)')
+                                ->disabled()
+                                ->reactive(),
+                            Forms\Components\TextInput::make('total')
+                                ->label('Total Harga')
+                                ->disabled()
+                                ->dehydrated(true)  // Add this to ensure value persists
+                                ->reactive()        // Make reactive
+                                ->prefix('Rp'),
+                            Forms\Components\TextInput::make('total_fine_amount')
+                                ->label('Total Denda')
+                                ->disabled()
+                                ->prefix('Rp'),
+                        ]),
+                ]),
+
+            // Rental Details Section
+            Forms\Components\Section::make('Detail Penyewaan')
+                ->description('Tambahkan barang yang disewa dan lihat perhitungan harga sewa di sini.')
+                ->schema([
+                    Forms\Components\Repeater::make('details')
+                        ->relationship('details')
+                        ->schema([
+                            Forms\Components\Grid::make(2)
+                                ->schema([
+                                    Forms\Components\Select::make('items_id')
+                                        ->label('Barang')
+                                        ->required()
+                                        ->searchable()
+                                        ->reactive()
+                                        ->options(fn () => Items::where('active', true)->get()
+                                            ->mapWithKeys(fn ($item) => [
+                                                $item->items_id => "{$item->items_name} (Rp {$item->price})"
+                                            ]))
+                                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                            if ($state) {
+                                                $item = Items::find($state);
+                                                if ($item) {
+                                                    // Reset size when item changes
+                                                    $set('size', null);
+
+                                                    // Generate trx_code if needed
+                                                    if (empty($get('../../trx_code'))) {
+                                                        $itemPrefix = explode('-', $item->items_code)[0];
+                                                        $latestTrx = TrxRentItem::latest('trx_rent_items_id')->first();
+                                                        $id = $latestTrx ? $latestTrx->trx_rent_items_id + 1 : 1;
+                                                        $trxCode = "TRX-{$itemPrefix}-" . date('dmy') . "-{$id}";
+                                                        $set('../../trx_code', $trxCode);
+                                                    }
+
+                                                    // Set initial qty and calculate subtotal
+                                                    $qty = $get('qty') ?? 1;
+                                                    self::calculateSubTotal($get, $set, $state, $qty);
+                                                }
+                                            }
+                                        }),
+                                        Forms\Components\TextInput::make('sub_total')
+                                        ->label('Sub Total')
+                                        ->disabled()
+                                        ->dehydrated(true)
+                                        ->prefix('Rp')
+                                        ->numeric()
+                                        ->reactive(),
+                                        Forms\Components\Select::make('item_stock_id')
+                                        ->label('Ukuran')
+                                        ->options(function (Get $get) {
+                                            $itemId = $get('items_id');
+                                            if (!$itemId) return [];
+                                            
+                                            $item = Items::find($itemId);
+                                            if (!$item) return [];
+                                            
+                                            // Get all selected item_stock_ids from other repeater items
+                                            $allDetails = collect($get('../../details'));
+                                            $selectedStockIds = $allDetails
+                                                ->where('items_id', $itemId)
+                                                ->pluck('item_stock_id')
+                                                ->filter()
+                                                ->toArray();
+                                                
+                                            // Current item stock id (for edit)
+                                            $currentStockId = $get('item_stock_id');
+                                            if ($currentStockId) {
+                                                $selectedStockIds = array_diff($selectedStockIds, [$currentStockId]);
+                                            }
+                                    
+                                            $options = collect();
+                                            
+                                            // Add Regular option if not already selected
+                                            if (!in_array(-99, $selectedStockIds)) {
+                                                $options->put(-99, "Regular (Stok: {$item->stock})");
+                                            }
+                                    
+                                            // Add available size options
+                                            $itemStocks = $item->itemStock()->get();
+                                            foreach ($itemStocks as $stock) {
+                                                if (!in_array($stock->item_stock_id, $selectedStockIds)) {
+                                                    $options->put(
+                                                        $stock->item_stock_id,
+                                                        "Size {$stock->size} (Stok: {$stock->stock})"
+                                                    );
+                                                }
+                                            }
+                                    
+                                            return $options;
+                                        })
+                                        ->reactive()
+                                        ->searchable()
+                                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                            // Reset quantity
+                                            $set('qty', 1);
+
+                                            // Recalculate subtotal
+                                            $itemId = $get('items_id');
+                                            if ($itemId) {
+                                                self::calculateSubTotal($get, $set, $itemId, 1);
+                                            }
+                                        }),
+                                        Forms\Components\TextInput::make('fine_amount')
+                                        ->label('Denda')
+                                        ->disabled()
+                                        ->dehydrated(true)
+                                        ->prefix('Rp')
+                                        ->default(0)
+                                        ->numeric(),
+                                        Forms\Components\TextInput::make('qty')
+                                        ->label('Jumlah')
+                                        ->required()
+                                        ->numeric()
+                                        ->default(1)
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                            $itemId = $get('items_id');
+                                            $itemStockId = $get('item_stock_id');
+                                            $qty = $state ?? 1;
+                                    
+                                            if ($itemId) {
+                                                $item = Items::find($itemId);
+                                                
+                                                // Check stock based on item_stock_id
+                                                if ($itemStockId == -99) {
+                                                    $stock = $item->stock;
+                                                } else {
+                                                    $stock = $item->itemStock()
+                                                        ->where('item_stock_id', $itemStockId)
+                                                        ->value('stock') ?? 0;
+                                                }
+                                    
+                                                if ($qty > $stock) {
+                                                    Notification::make()
+                                                        ->title('Error')
+                                                        ->body("Stok tidak mencukupi. Tersedia: {$stock}")
+                                                        ->danger()
+                                                        ->send();
+                                                        
+                                                    $set('qty', 1); // Reset to default
+                                                    return;
+                                                }
+                                    
+                                                self::calculateSubTotal($get, $set, $itemId, $qty);
+                                            }
+                                        }) 
                                 ]),
-                                Forms\Components\Group::make([
-                                    Forms\Components\Section::make('Hasil Perhitungan')
-                                        ->schema([
-                                            Forms\Components\TextInput::make('duration')
-                                                ->label('Durasi (hari)')
-                                                ->required()
-                                                ->disabled()
-                                                ->reactive()
-                                                ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateSubTotal($get, $set)),
-                                            Forms\Components\TextInput::make('sub_total')
-                                                ->label('Total Harga')
-                                                ->required()
-                                                ->numeric()
-                                                ->disabled()
-                                                ->reactive()
-                                                ->prefix('IDR ')
-                                                ->formatStateUsing(fn ($state) => number_format($state, 2, ',', '.')),
-                                            Forms\Components\TextInput::make('fine_amount')
-                                                ->label('Jumlah Denda')
-                                                ->numeric()
-                                                ->required()
-                                                ->reactive()
-                                                ->disabled()
-                                                ->visible(fn ($livewire) => $livewire instanceof Pages\EditTrxRentItem) // Hanya tampil saat edit
-                                                ->prefix('IDR ')
-                                                ->formatStateUsing(fn ($state) => number_format($state, 2, ',', '.')),
-                                        ]),
-                                ]),
-                            ]),
-                    ])
-                    ->visible(fn ($livewire) => $livewire instanceof Pages\EditTrxRentItem),
-                Forms\Components\Section::make('Detail Penyewaan')
-                    ->schema([
-                        Forms\Components\Repeater::make('items')
-                            ->label('Barang yang Disewa')
-                            ->schema([
-                                Forms\Components\Grid::make(2)
-                                    ->schema([
-                                        Forms\Components\Group::make([
-                                            Forms\Components\Section::make('Inputan')
-                                                ->schema([
-                                                    Forms\Components\Select::make('items_id')
-                                                        ->label('Barang')
-                                                        ->required()
-                                                        ->searchable()
-                                                        ->preload()
-                                                        ->options(
-                                                            Items::where('active', true)->pluck('items_name', 'items_id')
-                                                        )
-                                                        ->reactive()
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateSubTotal($get, $set))
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateFineAmount($get, $set)),
-                                                    Forms\Components\DateTimePicker::make('rent_start_date')
-                                                        ->label('Tanggal Mulai Sewa')
-                                                        ->native(false)
-                                                        ->weekStartsOnMonday()
-                                                        ->closeOnDateSelection()
-                                                        ->displayFormat('d F Y, H:i:s')
-                                                        ->format('Y-m-d H:i:s')
-                                                        ->required()
-                                                        ->reactive()
-                                                        ->minDate(fn ($get, $livewire) => $livewire instanceof Pages\CreateTrxRentItem ? Carbon::today()->toDateString() : $get('rent_start_date'))
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateSubTotal($get, $set))
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateDuration($get, $set)),
-                                                    Forms\Components\DateTimePicker::make('rent_end_date')
-                                                        ->label('Tanggal Selesai Sewa')
-                                                        ->native(false)
-                                                        ->weekStartsOnMonday()
-                                                        ->closeOnDateSelection()
-                                                        ->displayFormat('d F Y, H:i:s')
-                                                        ->format('Y-m-d H:i:s')
-                                                        ->required()
-                                                        ->reactive()
-                                                        ->minDate(fn ($get, $livewire) => $livewire instanceof Pages\CreateTrxRentItem ? Carbon::today()->toDateString() : $get('rent_start_date'))
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateDuration($get, $set))
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateSubTotal($get, $set))
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateFineAmount($get, $set)),
-                                                    Forms\Components\TextInput::make('qty')
-                                                        ->label('Jumlah Barang')
-                                                        ->required()
-                                                        ->numeric()
-                                                        ->reactive()
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateSubTotal($get, $set))
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateFineAmount($get, $set)),
-                                                    Forms\Components\Select::make('global_fine_id')
-                                                        ->label('Jenis Denda')
-                                                        ->preload()
-                                                        ->searchable()
-                                                        ->reactive()
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateFineAmount($get, $set))
-                                                        ->options(GlobalFine::pluck('fine_name', 'global_fine_id')),
-                                                ]),
-                                        ]),
-                                        Forms\Components\Group::make([
-                                            Forms\Components\Section::make('Hasil Perhitungan')
-                                                ->schema([
-                                                    Forms\Components\TextInput::make('duration')
-                                                        ->label('Durasi (hari)')
-                                                        ->required()
-                                                        ->disabled()
-                                                        ->reactive()
-                                                        ->afterStateUpdated(fn (callable $get, callable $set) => self::calculateSubTotal($get, $set)),
-                                                    Forms\Components\TextInput::make('sub_total')
-                                                        ->label('Total Harga')
-                                                        ->required()
-                                                        ->numeric()
-                                                        ->disabled()
-                                                        ->reactive()
-                                                        ->prefix('IDR ')
-                                                        ->formatStateUsing(fn ($state) => number_format($state, 2, ',', '.')),
-                                                    Forms\Components\TextInput::make('fine_amount')
-                                                        ->label('Jumlah Denda')
-                                                        ->numeric()
-                                                        ->required()
-                                                        ->reactive()
-                                                        ->disabled()
-                                                        ->visible(fn ($livewire) => $livewire instanceof Pages\EditTrxRentItem) // Hanya tampil saat edit
-                                                        ->prefix('IDR ')
-                                                        ->formatStateUsing(fn ($state) => number_format($state, 2, ',', '.')),
-                                                ]),
-                                        ]),
-                                    ]),
-                            ])
-                    ])
-                    ->visible(fn ($livewire) => $livewire instanceof Pages\CreateTrxRentItem),
-                Forms\Components\Section::make('Status dan Deskripsi')
-                    ->schema([
-                        Forms\Components\Grid::make(1)
-                            ->schema([
-                                Forms\Components\Select::make('status')
-                                    ->label('Status Barang')
-                                    ->options([
-                                        'Pending' => [
-                                            'P' => 'Pending',
-                                        ],
-                                        'In Process' => [
-                                            'D' => 'Sedang Disewa',
-                                        ],
-                                        'Completed' => [
-                                            'S' => 'Selesai',
-                                        ],
-                                        'Cancelled' => [
-                                            'B' => 'Dibatalkan',
-                                            'T' => 'Ditolak',
-                                        ],
-                                    ])
-                                    ->required()
-                                    ->default('P')
-                                    ->native(false),
-                                Forms\Components\DatePicker::make('return_date')
-                                    ->label('Tanggal Pengembalian')
-                                    ->native(false)
-                                    ->weekStartsOnMonday()
-                                    ->closeOnDateSelection()
-                                    ->displayFormat('d F Y, H:i:s')
-                                    ->minDate(fn ($get) => $get('rent_end_date'))
-                                    ->visible(fn ($livewire) => $livewire instanceof Pages\EditTrxRentItem),
-                                Forms\Components\Textarea::make('desc')
-                                    ->label('Deskripsi')
-                                    ->columnSpanFull(),
-                            ]),
-                    ]),
-            ]);
+                        ])
+                        ->required()
+                        ->minItems(1)
+                        ->defaultItems(1)
+                        ->reorderable()
+                        ->live()  // Important - make repeater live
+                        ->afterStateUpdated(function (Set $set, $state) {
+                            // Calculate total from all sub_totals
+                            $total = collect($state)->sum('sub_total');
+                            Log::info('Calculating total:', ['state' => $state, 'total' => $total]);
+                            $set('../../total', $total);  // Set parent total
+                        }),
+                ]),
+
+            // Status & Description Section
+            Forms\Components\Section::make('Status dan Deskripsi')
+                ->schema([
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\Select::make('status')
+                                ->label('Status')
+                                ->required()
+                                ->options([
+                                    'P' => 'Pending',
+                                    'D' => 'Sedang Disewa', 
+                                    'S' => 'Selesai',
+                                    'B' => 'Dibatalkan',
+                                    'T' => 'Ditolak',
+                                ])
+                                ->default('P')
+                                ->disabled(fn ($livewire) => $livewire instanceof Pages\CreateTrxRentItem),
+                            Forms\Components\DateTimePicker::make('return_date')
+                                ->label('Tanggal Pengembalian')
+                                ->native(false)
+                                ->displayFormat('d/m/Y H:i')
+                                ->visible(fn ($record) => $record && in_array($record->status, ['D', 'S']))
+                        ]),
+
+                    Forms\Components\Textarea::make('desc')
+                        ->label('Deskripsi')
+                        ->rows(3)
+                        ->columnSpanFull()
+                ]),
+        ])
+        ->disabled(fn ($record) => $record && in_array($record->status, ['S', 'B', 'T']));
     }
 
-    private static function calculateDuration(callable $get, callable $set)
+    private static function calculateDuration(Get $get, Set $set): void
     {
         $startDate = $get('rent_start_date');
         $endDate = $get('rent_end_date');
 
         if ($startDate && $endDate) {
-            $start = Carbon::parse($startDate)->startOfDay();
-            $end = Carbon::parse($endDate)->startOfDay();
+            $start = Carbon::parse($startDate);
+            $end = Carbon::parse($endDate);
 
             if ($end->lessThan($start)) {
-                $set('duration', 'End date cannot be earlier than start date');
+                Notification::make()
+                ->title('Error')
+                ->body("Tanggal selesai tidak boleh lebih awal dari tanggal mulai")
+                ->danger()
+                ->send();
+                $set('duration', 'Tanggal selesai tidak boleh lebih awal dari tanggal mulai');
             } else {
-                $duration = $start->diffInDays($end) + 1; // Tambahkan 1 hari untuk menyertakan hari mulai
+                $duration = $start->diffInDays($end) + 1;
                 $set('duration', $duration);
+                self::calculateTotals($get, $set);
             }
-        } else {
-            $set('duration', null);
         }
     }
 
-    private static function calculateSubTotal(callable $get, callable $set)
+    private static function calculateTotals(Get $get, Set $set): void
     {
-        $itemId = $get('items_id');
-        $qty = $get('qty');
-        $duration = $get('duration');
+        $details = collect($get('details'));
+        $duration = $get('duration') ?? 0;
 
-        if ($itemId && $qty && $duration) {
+        // Calculate subtotals
+        $total = $details->reduce(function ($sum, $detail) use ($duration) {
+            if (empty($detail['items_id']) || empty($detail['qty'])) {
+                return $sum;
+            }
+
+            $item = Items::find($detail['items_id']);
+            return $sum + ($item->price * $detail['qty'] * $duration);
+        }, 0);
+
+        $set('total', $total);
+
+        // Calculate fines if applicable
+        $rentEndDate = $get('rent_end_date');
+        if ($rentEndDate) {
+            $now = Carbon::now();
+            $endDate = Carbon::parse($rentEndDate);
+
+            if ($now->greaterThan($endDate)) {
+                $fineTotal = $details->reduce(function ($sum, $detail) {
+                    if (empty($detail['items_id']) || empty($detail['qty'])) {
+                        return $sum;
+                    }
+
+                    $item = Items::find($detail['items_id']);
+                    $globalFine = $item->globalFine;
+
+                    if ($globalFine) {
+                        return $sum + ($item->price * $detail['qty'] * ($globalFine->fine_percentage / 100));
+                    }
+
+                    return $sum;
+                }, 0);
+
+                $set('total_fine_amount', $fineTotal);
+            }
+        }
+    }
+
+    private static function calculateSubTotal(Get $get, Set $set, $itemId, $qty): void
+    {
+        if ($itemId) {
             $item = Items::find($itemId);
             if ($item) {
+                $duration = $get('../../duration') ?? 1;
                 $subTotal = $item->price * $qty * $duration;
                 $set('sub_total', $subTotal);
-            } else {
-                $set('sub_total', 0);
+
+                // Update main total
+                $details = collect($get('../../details'));
+                $total = $details->sum('sub_total');
+                $set('../../total', $total);
             }
-        } else {
-            $set('sub_total', 0);
-        }
-    }
-
-    private static function calculateFineAmount(callable $get, callable $set)
-    {
-        $rentEndDate = $get('rent_end_date');
-        $globalFineId = $get('global_fine_id');
-        $qty = $get('qty');
-        $itemId = $get('items_id');
-
-        if ($rentEndDate && $globalFineId && $qty && $itemId) {
-            $rentEndDate = Carbon::parse($rentEndDate)->endOfDay();
-            $globalFine = GlobalFine::find($globalFineId);
-            $item = Items::find($itemId);
-            $now = Carbon::now();
-
-            if ($globalFine && $item) {
-                $timeLimit = Carbon::parse($rentEndDate)->setTimeFrom(Carbon::parse($globalFine->time_limit));
-                $finePercentage = $globalFine->fine_percentage;
-                $fineAmount = 0;
-
-                // Jika waktu sekarang lebih besar dari rent_end_date
-                if ($now->greaterThan($rentEndDate)) {
-                    // Jika melewati time_limit, denda menjadi 100%
-                    if ($now->greaterThan($timeLimit)) {
-                        $fineAmount = $item->price * $qty;
-                    } else {
-                        // Jika masih dalam batas time_limit, gunakan fine_percentage
-                        $fineAmount = ($finePercentage / 100) * $item->price * $qty;
-                    }
-                }
-
-                $set('fine_amount', min($fineAmount, $item->price * $qty));
-            } else {
-                $set('fine_amount', 0);
-            }
-        } else {
-            $set('fine_amount', 0);
         }
     }
 
@@ -343,33 +366,25 @@ class TrxRentItemResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('Nama Penyewa')
-                    ->sortable()
+                Tables\Columns\TextColumn::make('trx_code')
+                    ->label('Kode Transaksi')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('item.items_name')
-                    ->label('Nama Barang')
-                    ->sortable()
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Penyewa')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('rent_start_date')
-                    ->label('Tanggal Mulai Sewa')
-                    ->dateTime('d F Y, H:i:s')
+                    ->label('Mulai Sewa')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('rent_end_date')
-                    ->label('Tanggal Selesai Sewa')
-                    ->dateTime('d F Y, H:i:s')
+                    ->label('Selesai Sewa')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('duration')
-                    ->label('Durasi (hari)')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('qty')
-                    ->label('Jumlah')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('sub_total')
+                Tables\Columns\TextColumn::make('total')
                     ->label('Total Harga')
                     ->money('IDR', true)
                     ->sortable(),
-                Tables\Columns\TextColumn::make('fine_amount')
+                Tables\Columns\TextColumn::make('total_fine_amount')
                     ->label('Jumlah Denda')
                     ->money('IDR', true)
                     ->sortable(),
@@ -389,7 +404,14 @@ class TrxRentItemResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'P' => 'Pending',
+                        'D' => 'Sedang Disewa',
+                        'S' => 'Selesai',
+                        'B' => 'Dibatalkan',
+                        'T' => 'Ditolak',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -401,9 +423,7 @@ class TrxRentItemResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

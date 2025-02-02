@@ -1,10 +1,9 @@
 <template>
   <div class="flex flex-column justify-content-end">
-    <div class="sticky-container">
-      <Navbar class="z-5" v-if="!route.meta.hideNavbarFooter" />
-    </div>
+    <Navbar class="z-5" v-if="!route.meta.hideNavbarFooter" />
     <router-view />
-    <Footer v-if="!route.meta.hideNavbarFooter" />
+    <Toast />
+    <Footer class="bottom-0" v-if="!route.meta.hideNavbarFooter" />
   </div>
 </template>
 

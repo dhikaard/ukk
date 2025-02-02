@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->bigInteger('role_id')->default(-99);
             $table->string('address', 256)->default('');
-            $table->string('phone', 20)->default('');
+            $table->integer('phone')->default(-99);
             $table->boolean('active')->default(true);
             $table->dropColumn('email_verified_at');
         });
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['roles_id', 'address', 'phone', 'active']);
+            $table->dropColumn(['role_id', 'address', 'phone', 'active']);
             $table->timestamp('email_verified_at')->nullable();
         });
     }
