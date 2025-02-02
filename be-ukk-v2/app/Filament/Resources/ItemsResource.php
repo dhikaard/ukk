@@ -37,8 +37,8 @@ class ItemsResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('ctgr_items_id')
                     ->label('Kategori Barang')
-                    ->native(false)
-                    ->searchable()
+                    ->preload()
+                    ->reactive()
                     ->options(CategoryItems::where('active', true)->pluck('ctgr_items_name', 'ctgr_items_id'))
                     ->createOptionForm([
                         Forms\Components\TextInput::make('ctgr_items_name')
@@ -107,6 +107,7 @@ class ItemsResource extends Resource
                             ->hint('Stock produk utama')
                             ->helperText('* Jika menambahkan stock per ukuran, stock produk utama harap diisi 0.')
                             ->numeric()
+                            ->required()
                             ->nullable(),
                         Forms\Components\Repeater::make('itemStock')
                             ->relationship('itemStock')
@@ -128,7 +129,6 @@ class ItemsResource extends Resource
                             ->columns(2)
                             ->grid(2)
                             ->reorderable()
-                            ->reorderableWithDragAndDrop()
                             ->columnSpanFull()
                             ->addActionAlignment(Alignment::Start),
                 ]),

@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { useRouter } from 'vue-router';
 
-export const useCommandMenuStore = defineStore('command-menu.store', {
+export const useCommandMenuStore = defineStore(
+  'command-menu.store', {
   state: () => ({
     search: '',
     isDarkMode: false,

@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import History from '../views/HistoryView.vue'
-import NotFound from '../views/NotFoundView.vue'
-import TermsView from '../views/TermsView.vue'
+import { useHomeViewStore } from '@/stores/home-view.store'
+import HomeView from '@/views/HomeView.vue'
+import History from '@/views/HistoryView.vue'
+import NotFound from '@/views/NotFoundView.vue'
+import TermsView from '@/views/TermsView.vue'
 import Login from '@/views/Login.vue'
-import DetailProduct from '@/views/DetailProduct.vue'
+import Register from '@/views/Register.vue'
 
 const routes = [
   {
@@ -14,16 +15,15 @@ const routes = [
     meta: { hideNavbarFooter: true }
   },
   {
+    path: '/register',
+    name: 'register',
+    component: Register,
+    meta: { hideNavbarFooter: true }
+  },
+  {
     path: '/',
     name: 'home',
     component: HomeView,
-    // children: [
-    //   {
-    //     path: '/home',
-    //     name: 'home',
-    //     component: HomeView,
-    //   }
-    // ]
   },
   {
     path: '/history',
@@ -36,9 +36,9 @@ const routes = [
     component: TermsView
   },
   {
-    path: '/product/:id',
+    path: '/product/:code/:slug',
     name: 'detailProduct',
-    component: DetailProduct
+    component: () => import('@/views/DetailProduct.vue')
   },
   {
     path: '/:pathMatch(.*)*',

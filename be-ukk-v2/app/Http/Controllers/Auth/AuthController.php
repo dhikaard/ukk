@@ -18,26 +18,27 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request)
     {
-        $role = DB::table('roles')->where('role_name', 'Pengguna')->first();
+        $role = DB::table('roles')->where('role_id', 2)->first();
         if (!$role) {
             return response()->json(['message' => 'Peran tidak ditemukan'], 404);
         }
 
         $userId = DB::table('users')->insertGetId([
-            'user_code' => Str::random(20),
+            // 'user_code' => Str::random(20),
             'role_id' => $role->role_id,
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'address' => $request->address,
             'phone' => $request->phone,
+            'active' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         $userWithRole = DB::table('users as A')
             ->join('roles as B', 'A.role_id', '=', 'B.role_id')
-            ->where('A.user_id', $userId)
+            ->where('A.id', $userId)
             ->first();
 
         return response()->json(['user' => [$userWithRole]]);

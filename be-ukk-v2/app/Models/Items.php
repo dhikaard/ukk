@@ -51,7 +51,6 @@ class Items extends Model
         });
     }
 
-    // TRX-SEP-JOOIU-25261213-1
     public function getTotalStockAttribute()
     {
         // Menghitung jumlah stock produk utama dan itemStock

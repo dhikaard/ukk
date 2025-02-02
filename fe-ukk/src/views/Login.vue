@@ -1,41 +1,100 @@
 <template>
-    <div class="flex">
-        <div class="surface-section w-full md:w-6 p-6 md:p-8">
-            <div class="mb-5">
-                <div class="flex align-items-center gap-2 mb-3">
-                    <img src="../assets/logo.jpg" alt="Image" height="50">
-                    <span class="philosopher-regular text-2xl">AW KAMERA</span>
-                </div>
-                <div class="text-900 text-3xl font-medium mb-3">Selamat Datang!</div>
-                <span class="text-600 font-medium mr-2">Udah punya akun belum?</span>
-                <a class="font-medium no-underline text-blue-500 cursor-pointer hover:underline">Yuk buat!</a>
-            </div>
-            <div>
-                <label for="email" class="block text-900 font-medium mb-2">Email</label>
-                <InputText id="email" v-model="context.email" type="text" placeholder="Alamat Email" class="w-full mb-3 p-3" />
-            
-                <label for="password" class="block text-900 font-medium mb-2">Password</label>
-                <InputText id="password" v-model="context.password" type="password" placeholder="Password" class="w-full mb-3 p-3" />
-            
-                <div class="flex align-items-center justify-content-between mb-6">
-                    <div class="flex align-items-center">
-                        <Checkbox id="rememberme2" :binary="true" v-model="checked2" class="mr-2"></Checkbox>
-                        <label for="rememberme2">Ingat saya</label>
+<div class="surface-ground px-4 py-8 md:px-6 lg:px-8 ">
+    <div class="flex flex-wrap shadow-5 justify-content-center">
+        <div class="w-full lg:w-6 px-0 py-4 lg:p-7 bg-blue-50">
+            <Carousel :value="features" :autoplayInterval="3000">
+                <template #item="slotProps">
+                    <div class="text-center mb-8">
+                        <img :src="slotProps.data.image" alt="Feature" class="mb-6 feature-image">
+                        <div class="mx-auto font-medium text-xl mb-4 text-blue-900">{{slotProps.data.title}}</div>
+                        <p class="m-0 text-blue-700 line-height-3">{{slotProps.data.text}}</p>
                     </div>
-                    <a class="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer hover:underline">Lupa password?</a>
-                </div>
-                <Button label="Masuk" :loading="context.loading['login']" @click="context.login()" icon="pi pi-sign-in" class="w-full p-3"></Button>
-            </div>
+                </template>
+            </Carousel>
         </div>
-        <div class="hidden md:block w-6 bg-no-repeat bg-cover" style="background-image: url('http://semar.taskhub.id:4444/images/blocks/signin/signin.jpg')"></div>
+        <div class="w-full lg:w-6 p-4 lg:p-7 surface-card">
+            <div class="flex align-items-center justify-content-between mb-7">
+                <span class="text-2xl font-medium text-900">Masuk</span>
+                <RouterLink to="/register" class="font-medium text-blue-500 hover:text-blue-700 no-underline cursor-pointer transition-colors transition-duration-150">
+                    Daftar
+                </RouterLink>
+            </div>
+            <div class="flex justify-content-between">
+                <Button class="ml-2 w-12 font-medium border-1 surface-border surface-100 py-3 px-2 p-component hover:surface-200 active:surface-300 text-900 cursor-pointer transition-colors transition-duration-150 inline-flex align-items-center justify-content-center">
+                    <i class="pi pi-google text-red-500 mr-2"></i>
+                    <span>Masuk dengan Google</span>
+                </Button>
+            </div>
+
+            <Divider align="center" class="my-4">
+                <span class="text-600 font-normal text-sm">OR</span>
+            </Divider>
+
+            <div class="field">
+                <label for="email" class="block text-900 font-medium mb-2">Email</label>
+                <InputText id="email" 
+                    type="email" 
+                    v-model="store.email" 
+                    placeholder="Alamat email" 
+                    :class="{'p-invalid': validationErrors?.email, 'w-full': true, 'mb-3': !validationErrors?.email, 'p-3': true}" />
+                <small v-if="validationErrors?.email" class="p-error">{{ validationErrors.email[0] }}</small>
+            </div>
+
+            <div class="field">
+                <label for="password" class="block text-900 font-medium mb-2">Password</label>
+                <InputText id="password"  
+                    type="password" 
+                    v-model="store.password" 
+                    placeholder="Password" 
+                    :class="{'p-invalid': validationErrors?.password, 'w-full': true, 'mb-3': !validationErrors?.password, 'p-3': true}" />
+                <small v-if="validationErrors?.password" class="p-error">{{ validationErrors.password[0] }}</small>
+            </div>
+
+            <Button label="Masuk" 
+                class="w-full p-3 text-xl" 
+                :loading="store.loading['login']" 
+                @click="handleLogin" />
+        </div>
     </div>
+</div>
 </template>
 
 <script setup>
+import { useAuthStore } from '@/stores/auth.store';
 import { ref } from 'vue';
-import { useLoginStore } from '@/stores/login.store';
 
-const context = useLoginStore();
+const store = useAuthStore();
+const validationErrors = ref(null);
 
-const checked2 = ref(false);
+const handleLogin = async () => {
+  try {
+    validationErrors.value = null;
+    await store.login();
+  } catch (error) {
+    if (error.error?.errors) {
+      validationErrors.value = error.error.errors;
+    }
+  }
+};
+
+const features = ref([
+  {
+    title: "Sistem Penyewaan Mudah",
+    text: "Proses penyewaan yang simpel dan cepat untuk kenyamanan Anda",
+    image: "/easy-management.png"
+  },
+  {
+    title: "Pengelolaan Denda",
+    text: "Kami menyediakan sistem pengelolaan denda yang dapat diatur sesuai kebutuhan Anda",
+    image: "/fines-management.png"
+  }
+]);
+
 </script>
+<style scoped>
+.feature-image {
+    width: 200px;  /* atau ukuran yang Anda inginkan */
+    height: 200px; /* atau ukuran yang Anda inginkan */
+    object-fit: contain; /* ini akan menjaga aspek ratio gambar */
+}
+</style>

@@ -1,15 +1,16 @@
 import { GeneralConstants } from '../utils/general-constant';
 import moment from 'moment';
 import { defineStore } from 'pinia';
+import { ApiConstant } from '@/utils/api-constant';
+import callApi from '@/utils/api-connect';
 
-export const useHomeViewStore = defineStore({
-    id: 'home-view.store',
+export const useHomeViewStore = defineStore(
+    'home-view.store', {
     state: () => ({
-        api: '',
+        api: ApiConstant.GET_ITEMS,
+        detailApi: ApiConstant.GET_ITEMS_DETAIL,
         dataTable: [],
         totalRecords: 0,
-        rowPerPageOptions: GeneralConstants.ROW_PERPAGE_OPTION,
-        defaultRows: GeneralConstants.DEFAULT_ROWS,
         loading: {},
         offset: 0,
         limit: GeneralConstants.DEFAULT_ROWS,
@@ -20,93 +21,113 @@ export const useHomeViewStore = defineStore({
         products: [],
         product: [],
         layout: "grid",
-        rows: 10,
+        rows: GeneralConstants.DEFAULT_ROWS,
         currentPage: 0,
-        selectedCategory: 0,
+        category: 0,
         selectedFilters: [],
         rangeValues: [1, 100000],
-        selectedData: null,
-        categoryOptions: [
-            { name: 'New York', code: 'NY' },
-            { name: 'Rome', code: 'RM' },
-            { name: 'London', code: 'LDN' },
-            { name: 'Istanbul', code: 'IST' },
-            { name: 'Paris', code: 'PRS' }
+        categoryOptions: [],
+        orderBy: null,
+        orderByOptions: [
+            { name: 'A-Z', code: 'items_name ASC' },
+            { name: 'Z-A', code: 'items_name DESC' },
+            { name: 'Terbaru', code: 'created_at DESC' },
+            { name: 'Termurah', code: 'price ASC' },
+            { name: 'Termahal', code: 'price DESC' }
         ],
-        sortBy: 'name-asc',
-        priceSort: 'low-high',
-        priceOrder: null,
-        priceOrderOptions: [
-            {name: 'A-Z', code : 'ASC'},
-            {name: 'Z-A', code : 'DESC'},
-            {name: 'Terbaru', code : 'create_datetime DESC'},
-            {name: 'Termurah ke Termahal', code : 'amount ASC'},
-            {name: 'Termahal ke Termurah', code : 'amount DESC'}
-        ]
-        
     }),
     actions: {
-        toggleCategory(category) {
-            const index = this.selectedCategory.indexOf(category);
-            if (index === -1) {
-              this.selectedCategory.push(category);
-            } else {
-              this.selectedCategory.splice(index, 1);
+        async getCategories() {
+            try {
+                const payload = {
+                    api: ApiConstant.GET_CATEGORIES
+                };
+
+                const result = await callApi(payload);
+                if (result.isOk) {
+                    this.categoryOptions = result.data;
+                }
+            } catch (error) {
+                console.error('Failed to fetch categories:', error);
             }
-          },      
-        setSelectedData(data) {
-            this.selectedData = data;
         },
         async getProducts() {
-            this.products = [
-                { id: "1", name: "Bamboo Watch", image: "bamboo-watch.jpg", price: 65, category: "Accessories", quantity: 24, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "2", name: "Blue T-Shirt", image: "bamboo-watch.jpg.", price: 35, category: "Clothing", quantity: 14, inventoryStatus: "INSTOCK", rating: 4 },
-                { id: "3", name: "Gaming Mouse", image: "bamboo-watch.jpg", price: 45, category: "Electronics", quantity: 30, inventoryStatus: "INSTOCK", rating: 5 },
-                { id: "4", name: "Leather Wallet", image: "bamboo-watch.jpg", price: 55, category: "Accessories", quantity: 10, inventoryStatus: "INSTOCK", rating: 4 },
-            ];
-            this.sortProducts();
-            this.totalRecords = this.products.length;
-            this.updatePaginatedProducts();
+            this.loading['products'] = true;
+                const payload = {
+                    api: this.api,
+                    params: {
+                        limit: this.rows,
+                        page: this.currentPage + 1,
+                        keyword: this.keyword,
+                        category: this.category ? this.category.map(cat => cat.code) : null,
+                        sort: this.orderBy?.code
+                    }
+                };
+
+                const result = await callApi(payload);
+                if (result.isOk) {
+                    this.loading['products'] = false;
+                    this.products = result.data.data.map(item => ({
+                        id: item.items_id,
+                        name: item.items_name,
+                        code: item.items_code,
+                        image: item.image,
+                        price: item.price,
+                        category: item.ctgr_items.ctgr_items_name,
+                        quantity: item.stock + (item.item_stock?.reduce((sum, stock) => sum + stock.stock, 0) || 0),
+                        inventoryStatus: (item.stock + (item.item_stock?.reduce((sum, stock) => sum + stock.stock, 0) || 0)) > 0 ? 'INSTOCK' : 'OUTOFSTOCK'
+                    }));
+                    this.totalRecords = result.data.total || 0;
+                    this.updatePaginatedProducts();
+            }
         },
         updatePaginatedProducts() {
             const start = this.currentPage * this.rows;
             const end = start + this.rows;
             this.product = this.products.slice(start, end);
         },
-        onPageChange(event) {
+        async onPageChange(event) {
             this.currentPage = event.page;
-            this.updatePaginatedProducts();
+            await this.getProducts();
         },
-        async getList() {
-            this.loading['table'] = true;
-            const payload = {
-                api: this.api,
-                body: {
-                    dateFrom: this.dateFrom,
-                    dateTo: this.dateTo,
-                    keyword: this.keyword,
-                    limit: this.limit,
-                    offset: this.offset,
+        async applyFilter() {
+            this.currentPage = 0;
+            await this.getProducts();
+        },
+        resetFilter() {
+            this.keyword = '';
+            this.category = null;
+            this.orderBy = null;
+            this.selectedFilters = [];
+            this.getProducts();
+        },
+        async getProductDetail(code) {
+            this.loading['productDetail'] = true;
+                const payload = {
+                    api: {
+                        ...this.detailApi,
+                        path: `items/${code}`
+                    }
+                };
+        
+                const result = await callApi(payload);
+                if (result.isOk) {
+                    this.loading['productDetail'] = false;
+                    return {
+                        id: result.data.items_id,
+                        code: result.data.items_code,
+                        name: result.data.items_name,
+                        image: result.data.image,
+                        price: result.data.price,
+                        category: result.data.ctgr_items.ctgr_items_name,
+                        quantity: result.data.stock + (result.data.item_stock?.reduce((sum, item) => sum + item.stock, 0) || 0),
+                        description: result.data.desc,
+                        sizes: result.data.item_stock || [],
+                        hasSize: result.data.item_stock?.length > 0,
+                        inventoryStatus: (result.data.stock + (result.data.item_stock?.reduce((sum, item) => sum + item.stock, 0) || 0)) > 0 ? 'INSTOCK' : 'OUTOFSTOCK'
+                    };
                 }
-            };
-            const result = await callApiTask(payload);
-            if (result.isOk) {
-                this.loading['table'] = false;
-            }
-        },
-        sortProducts() {
-            if (this.sortBy === 'name-asc') {
-                this.products.sort((a, b) => a.name.localeCompare(b.name));
-            } else if (this.sortBy === 'name-desc') {
-                this.products.sort((a, b) => b.name.localeCompare(a.name));
-            }
-            
-            if (this.priceSort === 'low-high') {
-                this.products.sort((a, b) => a.price - b.price);
-            } else if (this.priceSort === 'high-low') {
-                this.products.sort((a, b) => b.price - a.price);
-            }
-            this.updatePaginatedProducts();
+
         }
     }
 });
