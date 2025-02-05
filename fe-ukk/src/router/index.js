@@ -1,39 +1,36 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useHomeViewStore } from '@/stores/home-view.store'
-import HomeView from '@/views/HomeView.vue'
-import History from '@/views/HistoryView.vue'
-import NotFound from '@/views/NotFoundView.vue'
-import TermsView from '@/views/TermsView.vue'
-import Login from '@/views/Login.vue'
-import Register from '@/views/Register.vue'
-
 const routes = [
   {
     path: '/login',
     name: 'login',
-    component: Login,
+    component: () => import('@/views/Login.vue'),
     meta: { hideNavbarFooter: true }
   },
   {
     path: '/register',
     name: 'register',
-    component: Register,
+    component: () => import('@/views/Register.vue'),
     meta: { hideNavbarFooter: true }
   },
   {
     path: '/',
     name: 'home',
-    component: HomeView,
+    component: () => import('@/views/HomeView.vue')
+  },
+  {
+    path: '/rent',
+    name: 'rent',
+    component: () => import('@/views/RentView.vue')
   },
   {
     path: '/history',
     name: 'history',
-    component: History
+    component: () => import('@/views/HistoryView.vue') 
   },
   {
     path: '/terms',
     name: 'terms',
-    component: TermsView
+    component: () => import('@/views/TermsView.vue')
   },
   {
     path: '/product/:code/:slug',
@@ -43,7 +40,7 @@ const routes = [
   {
     path: '/:pathMatch(.*)*',
     name: 'notFound',
-    component: NotFound,
+    component: () => import('@/views/NotFoundView.vue'),
     meta: { hideNavbarFooter: true }
   }
 ]

@@ -103,15 +103,17 @@
                         <Calendar
                             class="w-full"
                             showIcon
-                            dateFormat="dd MM yy"
-                            v-model="dates"
-                            hideOnRangeSelection
+                            showTime
+                            hourFormat="24"
+                            dateFormat="dd/mm/yy"
+                            v-model="cartStore.dates"
                             selectionMode="range"
                             :manualInput="false"
                             :minDate="today"
+                            :stepMinute="30"
                             @hide="onDateSelect"
                             ref="calendar" />
-                    </div>
+                        </div>
                 </div>
             </div>
 
@@ -120,15 +122,15 @@
                         label="Tambah ke Keranjang"
                         severity="secondary"
                         class="flex-1 mr-2"
-                        :disabled="!isValid"
+                        :disabled="!isValid || !isAuthenticated"
                         @click="addToCart" />
                     <Button icon="pi pi-check"
                         label="Sewa Sekarang"
                         severity="success"
                         class="flex-1"
-                        :disabled="!isValid"
+                        :disabled="!isValid || !isAuthenticated"
                         @click="rentNow" />
-                </div>
+                </div>  
             </div>
         </div>
 
@@ -149,17 +151,18 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useHomeViewStore } from '@/stores/home-view.store';
+import { useRentViewStore } from '@/stores/rent-view.store';
 import { useRoute } from 'vue-router';
 import { toCurrencyLocale } from '@/utils/currency';
 import { useCartStore } from '@/stores/cart.store';
 import { useToast } from 'primevue/usetoast';
 import { useRouter } from 'vue-router';
 import { showError, showSessionExp } from '@/utils/toast-service';
+import local from '@/utils/local-storage';
 
 const toast = useToast();
 const route = useRoute();
-const store = useHomeViewStore();
+const store = useRentViewStore();
 const cartStore = useCartStore();
 const product = ref(null);
 const quantity = ref(1);
@@ -169,10 +172,28 @@ const calendar = ref(null);
 const today = ref(new Date());
 const router = useRouter();
 
-const onDateSelect = (e) => {
-    if (dates.value?.[0] && dates.value?.[1]) {
-        // Close calendar after both dates are selected
-        calendar.value.overlayVisible = false;
+const isAuthenticated = computed(() => {
+    return !!local.get('token');
+});
+
+const validateDateRange = (start, end) => {
+    const minHours = 24;
+    const hoursDiff = (end - start) / (1000 * 60 * 60);
+    return hoursDiff >= minHours;
+};
+
+const onDateSelect = () => {
+    if (cartStore.dates?.[0] && cartStore.dates?.[1]) {
+        if (!validateDateRange(cartStore.dates[0], cartStore.dates[1])) {
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Minimal waktu sewa adalah 24 jam',
+                life: 3000
+            });
+            cartStore.dates = null;
+            return;
+        }
     }
 };
 
@@ -193,7 +214,7 @@ const addToCart = async () => {
         await cartStore.addToCart({
             ...product.value,
             selectedSize: selectedSize.value
-        }, quantity.value, dates.value, toast);
+        }, quantity.value, cartStore.dates, toast);
     } catch (error) {
         showError(toast, error.message);
     }
@@ -201,14 +222,14 @@ const addToCart = async () => {
 
 const rentNow = async () => {
     try {
-        const token = localStorage.getItem('token');
+        const token = local.get('token');
 
         if (!token) {
             showSessionExp(toast);
             return;
         }
 
-        if (!dates.value) {
+        if (!cartStore.dates) {
             throw new Error('Pilih tanggal sewa terlebih dahulu');
         }
 
@@ -222,7 +243,7 @@ const rentNow = async () => {
                 selectedSize: selectedSize.value
             }, 
             quantity.value, 
-            dates.value
+            cartStore.dates
         );
 
         // Then checkout
@@ -270,8 +291,8 @@ const getMaxQuantity = computed(() => {
 
 const isValid = computed(() => {
     return product.value &&
-           dates.value?.[0] &&
-           dates.value?.[1] &&
+           cartStore.dates?.[0] &&
+           cartStore.dates?.[1] &&
            quantity.value > 0 &&
            quantity.value <= getMaxQuantity.value &&
            (!product.value.hasSize || selectedSize.value);

@@ -135,10 +135,10 @@ class TrxRentItemResource extends Resource
                                         ->options(function (Get $get) {
                                             $itemId = $get('items_id');
                                             if (!$itemId) return [];
-                                            
+
                                             $item = Items::find($itemId);
                                             if (!$item) return [];
-                                            
+
                                             // Get all selected item_stock_ids from other repeater items
                                             $allDetails = collect($get('../../details'));
                                             $selectedStockIds = $allDetails
@@ -146,20 +146,20 @@ class TrxRentItemResource extends Resource
                                                 ->pluck('item_stock_id')
                                                 ->filter()
                                                 ->toArray();
-                                                
+
                                             // Current item stock id (for edit)
                                             $currentStockId = $get('item_stock_id');
                                             if ($currentStockId) {
                                                 $selectedStockIds = array_diff($selectedStockIds, [$currentStockId]);
                                             }
-                                    
+
                                             $options = collect();
-                                            
+
                                             // Add Regular option if not already selected
                                             if (!in_array(-99, $selectedStockIds)) {
                                                 $options->put(-99, "Regular (Stok: {$item->stock})");
                                             }
-                                    
+
                                             // Add available size options
                                             $itemStocks = $item->itemStock()->get();
                                             foreach ($itemStocks as $stock) {
@@ -170,7 +170,7 @@ class TrxRentItemResource extends Resource
                                                     );
                                                 }
                                             }
-                                    
+
                                             return $options;
                                         })
                                         ->reactive()
@@ -202,10 +202,10 @@ class TrxRentItemResource extends Resource
                                             $itemId = $get('items_id');
                                             $itemStockId = $get('item_stock_id');
                                             $qty = $state ?? 1;
-                                    
+
                                             if ($itemId) {
                                                 $item = Items::find($itemId);
-                                                
+
                                                 // Check stock based on item_stock_id
                                                 if ($itemStockId == -99) {
                                                     $stock = $item->stock;
@@ -214,21 +214,21 @@ class TrxRentItemResource extends Resource
                                                         ->where('item_stock_id', $itemStockId)
                                                         ->value('stock') ?? 0;
                                                 }
-                                    
+
                                                 if ($qty > $stock) {
                                                     Notification::make()
                                                         ->title('Error')
                                                         ->body("Stok tidak mencukupi. Tersedia: {$stock}")
                                                         ->danger()
                                                         ->send();
-                                                        
+
                                                     $set('qty', 1); // Reset to default
                                                     return;
                                                 }
-                                    
+
                                                 self::calculateSubTotal($get, $set, $itemId, $qty);
                                             }
-                                        }) 
+                                        })
                                 ]),
                         ])
                         ->required()
@@ -254,7 +254,7 @@ class TrxRentItemResource extends Resource
                                 ->required()
                                 ->options([
                                     'P' => 'Pending',
-                                    'D' => 'Sedang Disewa', 
+                                    'D' => 'Sedang Disewa',
                                     'S' => 'Selesai',
                                     'B' => 'Dibatalkan',
                                     'T' => 'Ditolak',

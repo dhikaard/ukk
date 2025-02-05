@@ -29,7 +29,7 @@ class CategoryItemsResource extends Resource
                 ->label('Aktif')
                 ->required()
                 ->inline(false)
-                ->visible(fn ($livewire) => $livewire instanceof Pages\EditCategoryItems), // Hanya muncul saat edit
+                ->visible(fn ($livewire) => $livewire instanceof Pages\EditCategoryItems),
         ]);
     }
 
@@ -70,6 +70,16 @@ class CategoryItemsResource extends Resource
     public static function getModelLabel(): string
     {
         return 'Kategori Barang';
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('active', true)->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'primary';
     }
 
     public static function getRelations(): array

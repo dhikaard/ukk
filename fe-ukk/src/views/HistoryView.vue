@@ -1,36 +1,74 @@
 <template>
-<div class="surface-ground px-3 py-5 md:px-6 lg:px-8">
-    <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4">
-        <div class="flex flex-column text-center md:text-left w-full md:w-auto mb-4 md:mb-0">
-            <span class="text-900 text-2xl md:text-3xl font-medium mb-2">Riwayat Sewa</span>
-            <span class="text-600 text-base md:text-xl">Riwayat transaksi penyewaan Anda</span>
-        </div>
-    </div>
-
-    <Skeleton v-if="store.loading['history']" height="10rem" class="mb-4" />
-    
-    <div v-else-if="store.items.length === 0" class="surface-card p-4 border-round shadow-2 text-center">
-        <i class="pi pi-inbox text-5xl md:text-6xl text-primary mb-4"></i>
-        <p>Belum ada riwayat penyewaan</p>
-    </div>
-
-    <div v-else v-for="item in store.items" :key="item.trx_rent_items_id" 
-         class="surface-card border-round shadow-2 mb-4">
-        <!-- Transaction Header -->
-        <div class="grid grid-nogutter p-2 surface-100 border-round-top">
-            <div class="col-12 md:col-4 p-2 text-center md:text-left">
-                <span class="text-700 block text-sm md:text-base">Nomor Transaksi</span>
-                <span class="text-900 font-medium block mt-2">#{{ item.trx_code }}</span>
+    <div class="surface-card px-3 py-5 md:px-6 lg:px-8">
+        <!-- Header Section with Filter -->
+        <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-5">
+            <div class="flex flex-column text-center md:text-left">
+                <span class="text-900 text-3xl font-bold mb-2">Riwayat Sewa</span>
+                <span class="text-600 text-xl">Riwayat transaksi penyewaan Anda</span>
             </div>
-            <div class="col-12 md:col-4 p-2 text-center">
-                <span class="text-700 block text-sm md:text-base">Tanggal Sewa</span>
-                <span class="text-900 font-medium block mt-2 text-sm md:text-base">
-                    {{ formatDate(item.rent_start_date) }} - {{ formatDate(item.rent_end_date) }}
+            <div class="flex gap-3 mt-3 md:mt-0">
+                <Dropdown v-model="store.selectedStatus" 
+                         :options="store.statusOptions" 
+                         optionLabel="label" 
+                         optionValue="value"
+                         placeholder="Filter Status"
+                         class="w-full md:w-12rem"
+                         @change="store.applyFilter()" />
+                <Button icon="pi pi-refresh" 
+                        rounded 
+                        text 
+                        raised 
+                        @click="store.resetFilter()" />
+            </div>
+        </div>
+    
+        <Skeleton v-if="store.loading['history']" height="10rem" class="mb-4" />
+        
+        <!-- Empty State -->
+        <div v-else-if="store.items.length === 0" 
+             class="surface-card p-8 border-round shadow-2 text-center">
+            <i class="pi pi-shopping-bag text-6xl text-primary mb-4"></i>
+            <h2 class="text-900 font-medium text-xl mb-2">
+            {{ store.items.length === 0 ? 'Belum Ada Riwayat' : 'Tidak Ada Data' }}
+            </h2>
+            <p class="text-600 mb-4">
+            {{ store.items.length === 0 
+                ? 'Mulai petualangan Anda dengan menyewa peralatan kami'
+                : 'Tidak ada transaksi yang sesuai dengan filter yang dipilih' 
+            }}
+            </p>
+            <Button v-if="store.items.length === 0"
+                label="Lihat Katalog" 
+                icon="pi pi-arrow-right" 
+                @click="router.push('/rent')" />
+        </div>
+    
+        <!-- History List -->
+        <div v-else v-for="item in store.items" 
+         :key="item.trx_rent_items_id" 
+             class="surface-card border-round shadow-2 mb-4 transform transition-all hover:shadow-4">
+
+        <!-- Transaction Header -->
+        <div class="grid grid-nogutter p-3 surface-100 border-round-top">
+            <div class="col-12 md:col-4 flex align-items-center justify-content-center md:justify-content-start gap-2">
+            <div class="flex flex-column">
+                <span class="text-700 text-center md:text-left">Nomor Transaksi</span>
+                <span class="text-900 text-center md:text-left font-medium">#{{ item.trx_code }}</span>
+            </div>
+            </div>
+            <div class="col-12 md:col-4 flex align-items-center justify-content-center md:justify-content-start gap-2 mt-3 md:mt-0">
+            <div class="flex flex-column">
+                <span class="text-700 text-center md:text-left">Tanggal Sewa</span>
+                <span class="text-900 text-center md:text-left font-medium">
+                {{ formatDate(item.rent_start_date) }} - {{ formatDate(item.rent_end_date) }}
                 </span>
             </div>
-            <div class="col-12 md:col-4 p-2 text-center md:text-right">
-                <span class="text-700 block text-sm md:text-base">Total</span>
-                <span class="text-900 font-medium block mt-2">{{ toCurrencyLocale(item.total) }}</span>
+            </div>
+            <div class="col-12 md:col-4 flex align-items-center justify-content-center md:justify-content-end gap-2 mt-3 md:mt-0">
+            <div class="flex flex-column">
+                <span class="text-700 text-center md:text-left">Total Pembayaran</span>
+                <span class="text-900 text-center md:text-left font-medium">{{ toCurrencyLocale(item.total) }}</span>
+                </div>
             </div>
         </div>
 
@@ -92,30 +130,39 @@
         </div>
 
         <!-- Status & Actions -->
-        <div class="flex flex-column md:flex-row justify-content-between align-items-center gap-3 p-3 surface-100 border-round-bottom">
-            <Tag :severity="getStatusSeverity(item.status)" 
-                 :value="getStatusLabel(item.status)" 
+        <div class="flex justify-content-between align-items-center gap-3 p-3">
+            <Tag :severity="store.getStatusSeverity(item.status)" 
+                 :value="store.getStatusLabel(item.status)"
                  class="text-lg" />
-            <Button v-if="item.status === 'P'"
-                    label="Batalkan" 
-                    severity="danger"
-                    :loading="loading[item.trx_rent_items_id]"
-                    text
-                    @click="cancelOrder(item.trx_rent_items_id)" />
+            <div class="flex gap-2">
+                <Button v-if="item.status === 'P'"
+                        icon="pi pi-times"
+                        label="Batalkan" 
+                        severity="danger"
+                        :loading="store.loading['cancelOrder']"
+                        text
+                        @click="store.cancelRent(item.trx_rent_items_id)" />
+                <Button v-if="item.status === 'S'"
+                        icon="pi pi-sync"
+                        label="Sewa Lagi" 
+                        text
+                        @click="rentAgain(item)" />
+            </div>
         </div>
     </div>
 </div>
+
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
-import { useHistoryStore } from '@/stores/history.store';
-import { useToast } from 'primevue/usetoast';
-import { toCurrencyLocale } from '@/utils/currency';
 
+<script setup>
+import { onMounted } from 'vue';
+import { useHistoryStore } from '@/stores/history.store';
+import { toCurrencyLocale } from '@/utils/currency';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 const store = useHistoryStore();
-const toast = useToast();
-const loading = ref({});
 
 onMounted(() => {
     store.getHistory();
@@ -129,47 +176,13 @@ const formatDate = (date) => {
     });
 };
 
-const getStatusLabel = (status) => {
-    const labels = {
-        'P': 'Pending',
-        'D': 'Sedang Disewa',
-        'S': 'Selesai',
-        'B': 'Dibatalkan',
-        'T': 'Ditolak'
-    };
-    return labels[status] || status;
-};
-
-const getStatusSeverity = (status) => {
-    const severities = {
-        'P': 'warning',
-        'D': 'info',
-        'S': 'success',
-        'B': 'danger',
-        'T': 'danger'
-    };
-    return severities[status] || 'info';
-};
-
-const cancelOrder = async (id) => {
-    try {
-        loading.value[id] = true;
-        await store.cancelRent(id);
-        toast.add({
-            severity: 'success',
-            summary: 'Berhasil',
-            detail: 'Pesanan berhasil dibatalkan',
-            life: 3000
+const rentAgain = (item) => {
+    const routeParams = store.getDetailForRentAgain(item);
+    if (routeParams) {
+        router.push({
+            name: 'detailProduct',
+            params: routeParams
         });
-    } catch (error) {
-        toast.add({
-            severity: 'error',
-            summary: 'Gagal',
-            detail: error.message,
-            life: 3000
-        });
-    } finally {
-        loading.value[id] = false;
     }
 };
 </script>

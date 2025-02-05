@@ -14,8 +14,8 @@ Route::prefix('/v1/rent')->group(function () {
 
     // Protected routes
     Route::middleware('auth:api')->group(function () {
-        Route::post('/rent', [ManageItemController::class, 'addRent']);
-        Route::get('/history', [ManageItemController::class, 'getRentHistory']);
-        Route::put('/rent/cancel/{id}', [ManageItemController::class, 'cancelRent']);    
+        Route::post('/addRent', [ManageItemController::class, 'addRent']);
+        Route::get('/getRentHistory', [ManageItemController::class, 'getRentHistory']);
+        Route::put('/cancelRent', [ManageItemController::class, 'cancelRent']);
     });
 });

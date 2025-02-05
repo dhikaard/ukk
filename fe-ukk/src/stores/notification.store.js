@@ -16,16 +16,18 @@ export const useNotificationStore = defineStore('notification.store', {
         async getOverdueRentals() {
             this.loading = true;
             try {
-                const result = await callApi({
+                const payload = {
                     api: ApiConstant.GET_RENT_HISTORY
-                });
-
+                };
+                const result = await callApi(payload);
                 if (result.isOk) {
                     const now = new Date();
                     this.items = result.data.filter(item => 
                         item.status === 'D' && 
                         new Date(item.rent_end_date) < now
                     );
+                } else  {
+                    this.loading = false
                 }
             } finally {
                 this.loading = false;

@@ -4,8 +4,8 @@ import { defineStore } from 'pinia';
 import { ApiConstant } from '@/utils/api-constant';
 import callApi from '@/utils/api-connect';
 
-export const useHomeViewStore = defineStore(
-    'home-view.store', {
+export const useRentViewStore = defineStore(
+    'rent-view.store', {
     state: () => ({
         api: ApiConstant.GET_ITEMS,
         detailApi: ApiConstant.GET_ITEMS_DETAIL,

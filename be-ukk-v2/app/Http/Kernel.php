@@ -10,5 +10,5 @@ class Kernel extends HttpKernel
         'auth' => \App\Http\Middleware\Authenticate::class,
         'jwt.auth' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
     ];
-    
+
 }

@@ -187,53 +187,64 @@ class ManageItemController extends Controller
         }
     }
 
-public function getRentHistory()
-{
-    try {
-        $user = auth('api')->user();
-        $rentItems = TrxRentItem::with([
-            'details.item.ctgr_items',
-            'details.itemStock'
-        ])
-            ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // Transform the items to include full image URLs
-        $rentItems->transform(function ($rentItem) {
-            $rentItem->details->transform(function ($detail) {
-                if ($detail->item && $detail->item->image) {
-                    if (!str_starts_with($detail->item->image, 'http')) {
-                        $detail->item->image = asset('storage/' . ltrim($detail->item->image, '/'));
-                    }
-                }
-                return $detail;
-            });
-            return $rentItem;
-        });
-
-        return response()->json($rentItems);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ], 400);
-    }
-}
-    public function cancelRent($id)
+    public function getRentHistory(Request $request)
     {
         try {
             $user = auth('api')->user();
+            $query = TrxRentItem::with([
+                'details.item.ctgr_items',
+                'details.itemStock'
+            ])
+            ->where('user_id', $user->id);
+    
+            // Apply status filter if provided and not empty
+            if ($request->has('status') && $request->status !== '') {
+                $query->where('status', $request->status);
+            }
+    
+            $rentItems = $query->orderBy('created_at', 'desc')->get();
+    
+            // Transform items...
+            $rentItems->transform(function ($rentItem) {
+                $rentItem->details->transform(function ($detail) {
+                    if ($detail->item && $detail->item->image) {
+                        if (!str_starts_with($detail->item->image, 'http')) {
+                            $detail->item->image = asset('storage/' . ltrim($detail->item->image, '/'));
+                        }
+                    }
+                    return $detail;
+                });
+                return $rentItem;
+            });
+    
+            return response()->json($rentItems);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+    
+    public function cancelRent(Request $request)
+    {
+        try {
+            // Validate request
+            $request->validate([
+                'id' => 'required|exists:trx_rent_items,trx_rent_items_id'
+            ]);
+    
+            $user = auth('api')->user();
             $rentItem = TrxRentItem::where('user_id', $user->id)
-                ->where('trx_rent_items_id', $id)
+                ->where('trx_rent_items_id', $request->id)
                 ->where('status', 'P')
                 ->firstOrFail();
-
+    
             DB::beginTransaction();
             try {
                 // Update status
                 $rentItem->update(['status' => 'B']);
-
+    
                 DB::commit();
                 return response()->json([
                     'status' => 'success',

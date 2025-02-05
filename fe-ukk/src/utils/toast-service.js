@@ -36,13 +36,10 @@ export const showErrorOtp = (toast) => {
 
 export const showSessionExp = (toast) => {
   toast.add({ severity: 'error', summary: 'Gagal', detail: 'Status tidak boleh tersedia jika stok adalah 0', life: 3000 });
+};
 
-  // toast.add({ 
-  //   severity: 'error', 
-  //   summary: 'Sesi Berakhir', 
-  //   detail: 'Sesi Anda telah berakhir. Silakan masuk kembali!', 
-  //   life: 3000 
-  // });
+export const showSuccessCancelOrder = (toast) => {
+  toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Pesanan berhasil dibatalkan', life: 3000 });
 };
 
 export const showError = (toast, message) => {

@@ -22,15 +22,15 @@ export const ApiConstant = {
         method: 'GET'
     },
     ADD_RENT: {
-        path: 'rent',
+        path: 'addRent',
         method: 'POST'
     },
     GET_RENT_HISTORY: {
-        path: 'history',
+        path: 'getRentHistory',
         method: 'GET'
     },
     CANCEL_RENT: {
-        path: 'rent/cancel/:id',
+        path: 'cancelRent',
         method: 'PUT'
     }
 };

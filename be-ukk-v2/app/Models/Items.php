@@ -22,8 +22,12 @@ class Items extends Model
     {
         return $this->hasMany(ItemsStock::class, 'items_id');
     }
-
-
+        
+    public function globalFine(): BelongsTo
+    {
+        return $this->belongsTo(GlobalFine::class, 'global_fine_id', 'global_fine_id');
+    }
+    
     protected $fillable = [
         'items_name',
         'items_code',
