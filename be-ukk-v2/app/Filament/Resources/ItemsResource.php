@@ -228,6 +228,16 @@ class ItemsResource extends Resource
         return 'Barang';
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('active', true)->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'primary';
+    }
+
     public static function getRelations(): array
     {
         return [

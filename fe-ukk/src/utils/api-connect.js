@@ -32,17 +32,8 @@ callApiConnect.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-const callApi = async (payload) => {
+  const callApi = async (payload) => {
   const { api, body, params, toast } = payload;
-
-  console.group('API Request');
-  console.trace({
-    endpoint: api.path,
-    method: api.method,
-    body: body || 'No body',
-    params: params || 'No params'
-  });
 
   try {
     const response = await callApiConnect({
@@ -52,43 +43,34 @@ const callApi = async (payload) => {
       params: params || {},
     });
 
-    console.group('API Response');
-    console.trace({
+    const apiName = api.path.split('/').pop();
+
+    // Simplified success logging
+    console.log(`API [${apiName}]:`, {
       status: response.status,
-      message: response.data.message || 'Success',
-      data: response.data
+      isOk: true,
+      data: response.data,
+      body: body || 'No body',
     });
-    console.groupEnd();
 
     if (response.status === 200) {
-      console.groupEnd();
       return { isOk: true, data: response.data };
     }
 
     if (toast) {
       showError(toast, response.data.message);
     }
-    console.groupEnd();
     return { isOk: false, error: response.data };
 
   } catch (error) {
-    console.group('API Error');
-    console.trace({
+    const apiName = api.path.split('/').pop();
+    console.error(`API [${apiName}] Error:`, {
       status: error.response?.status,
-      message: error.response?.data?.message || error.message,
-      error: error.response?.data || error
+      isOk: false,
+      message: error.response?.data?.message,
+      error: error.response?.data
     });
-    console.groupEnd();
-    console.groupEnd();
-
-    if (error.response?.status === 401) {
-      if (toast) {
-        showSessionExp(toast);
-      }
-    } else if (toast) {
-      showError(toast, error.response?.data?.message || 'An error occurred');
-    }
-    return { isOk: false, error: error.response?.data || error };
+    return { isOk: false, error: error.response?.data };
   }
 };
 

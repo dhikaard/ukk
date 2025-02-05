@@ -65,8 +65,8 @@
                                                    severity="danger"
                                                    text
                                                    class="p-button-rounded"
-                                                   @click="removeItem(item)" />
-                                        </div>
+                                                   @click="store.removeFromCart(item)" />
+                                            </div>
                                     </div>
                                 </div>
                             </div>
@@ -84,7 +84,7 @@
                             class="w-full mb-2 p-3"
                             label="Checkout"
                             :disabled="!store.items.length"
-                            @click="checkout" />
+                            @click="store.handleCheckout(router)" />
                 </div>
             </div>
         </div>
@@ -96,11 +96,8 @@ import { onMounted } from 'vue';
 import { useCartStore } from '@/stores/cart.store';
 import { useRouter } from 'vue-router';
 import { toCurrencyLocale } from '@/utils/currency';
-import { useToast } from 'primevue/usetoast';
-import { showError, showSuccessAdd, showSessionExp, showSuccessRemove } from '@/utils/toast-service';
 
 const router = useRouter();
-const toast = useToast();
 const store = useCartStore();
 
 const props = defineProps({
@@ -124,31 +121,6 @@ const formatDate = (date) => {
     });
 };
 
-const removeItem = async (item) => {
-    try {
-        store.removeItem(item.id);
-        showSuccessRemove(toast);
-    } catch (error) {
-        showError(toast, error.message);
-    }
-};
-
-const checkout = async () => {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            showSessionExp(toast);
-            router.push('/login');
-            return;
-        }
-
-        await store.checkout();
-        showSuccessAdd(toast);
-        router.push('/history');
-    } catch (error) {
-        showError(toast, error.message);
-    }
-};
 </script>
 
 
