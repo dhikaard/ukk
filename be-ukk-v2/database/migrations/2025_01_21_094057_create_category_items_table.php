@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ctgr_products', function (Blueprint $table) {
-            $table->id('ctgr_products_id');
-            $table->string('ctgr_products_name', 256);
+        Schema::create('ctgr_items', function (Blueprint $table) {
+            $table->id('ctgr_items_id');
+            $table->string('ctgr_items_name', 256);
             $table->boolean('active')->default(true);
             $table->timestamps();
         });
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('category_products');
+        Schema::dropIfExists('category_items');
     }
 };

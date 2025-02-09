@@ -12,13 +12,14 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Kelola Pengguna';
+
+    protected static ?string $navigationIcon = 'heroicon-o-users';
 
     public static function form(Form $form): Form
     {
@@ -31,6 +32,7 @@ class UserResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('password')
                     ->password()
+                    ->revealable()
                     ->required(),
                 Forms\Components\Select::make('role_id')
                     ->options(Roles::where('role_id', '!=', 1)
@@ -42,7 +44,8 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('phone')
                     ->tel()
                     ->required(),
-                Forms\Components\TextInput::make('active')
+                Forms\Components\Toggle::make('active')
+                    ->required()
                     ->label('Aktif')
                     ->required()
                     ->visible(fn ($livewire) => $livewire instanceof Pages\EditUser),
@@ -56,6 +59,7 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->icon('heroicon-m-envelope')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -67,14 +71,17 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('roles.role_name')
                     ->numeric()
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('address')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
+                    ->icon('heroicon-m-phone')
                     ->searchable(),
                 Tables\Columns\IconColumn::make('active')
                     ->boolean(),
             ])
+            ->striped()
             ->filters([
                 //
             ])

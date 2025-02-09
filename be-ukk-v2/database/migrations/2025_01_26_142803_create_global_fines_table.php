@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_stock', function (Blueprint $table) {
-            $table->id('product_stock_id');
-            $table->bigInteger('products_id');
-            $table->bigInteger('size');
-            $table->bigInteger('stock');
+        Schema::create('global_fines', function (Blueprint $table) {
+            $table->id('global_fine_id');
+            $table->string('fine_name', 256);
+            $table->double('fine_percentage');
+            $table->time('time_limit');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_stocks');
+        Schema::dropIfExists('global_fines');
     }
 };

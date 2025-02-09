@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
-use App\Filament\Resources\ProductsResource\Pages\ViewDetails;
+
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/products/{product}/view', [ViewDetails::class, 'render'])->name('filament.resources.products.view');
+Route::post('/register', [RegisterController::class, 'register']);
+Route::post('/login', [LoginController::class, 'login']);

@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
-            $table->id('products_id');
-            $table->string('products_name', 256);
-            $table->string('products_code', 15);
-            $table->integer('ctgr_products_id')->default(-99);
+        Schema::create('items', function (Blueprint $table) {
+            $table->id('items_id');
+            $table->string('items_name', 256);
+            $table->string('items_code', 15);
+            $table->integer('ctgr_items_id')->default(-99);
             $table->text('desc');
             $table->bigInteger('stock');
             $table->double('price');
-            $table->double('fine_bill');
+            $table->bigInteger('global_fine_id');
             $table->boolean('active')->default(true);
             $table->string('image')->nullable();
             $table->timestamps();
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('items');
     }
 };
