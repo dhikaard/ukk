@@ -79,19 +79,20 @@
                 <div class="grid formgrid">
                     <!-- Image -->
                     <div class="col-12 md:col-2 flex justify-content-center md:justify-content-start">
-                        <img :src="detail.item.image" :alt="detail.item.items_name"
-                             class="w-8rem h-8rem border-round shadow-2" 
-                             style="object-fit: cover;" />
+                        <img :src="detail.item?.image || '/images/default-product.png'"
+                                :alt="'Product Image'"
+                                class="w-8rem h-8rem border-round shadow-2" 
+                                style="object-fit: cover;"/>
                     </div>
                     
                     <!-- Item Details -->
                     <div class="col-12 md:col-7 flex flex-column justify-content-center mt-3 md:mt-0">
                         <span class="text-900 font-medium text-xl mb-2 text-center md:text-left">
-                            {{ detail.item.items_name }}
+                            {{ detail.item?.items_name || 'Produk tidak tersedia' }}
                         </span>
                         <div class="text-center md:text-left">
                             <span class="text-600 mb-2 block">
-                                {{ detail.item.ctgr_items.ctgr_items_name }}
+                                {{ detail.item?.category?.ctgr_items_name || 'Kategori tidak tersedia' }}
                             </span>
                             <span class="text-600 mb-2 block">
                                 <span v-if="detail.item_stock_id === -99">
@@ -103,15 +104,14 @@
                             </span>
                             <div class="flex align-items-center justify-content-center md:justify-content-start">
                                 <span class="text-primary font-medium text-lg mr-2">
-                                    {{ toCurrencyLocale(detail.item.price) }}
+                                    {{ toCurrencyLocale(detail.item?.price || 0) }}
                                 </span>
                                 <span class="text-700">
                                     x {{ detail.qty }} item(s)
                                 </span>
                             </div>
                         </div>
-                    </div>
-                    
+                    </div>                    
                     <!-- Subtotal -->
                     <div class="col-12 md:col-3 flex flex-column justify-content-center mt-3 md:mt-0">
                         <div class="text-center md:text-right">

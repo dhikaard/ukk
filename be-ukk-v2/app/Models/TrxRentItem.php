@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RentalStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -27,6 +28,10 @@ class TrxRentItem extends Model
     {
         return $this->hasMany(TrxRentItemDetail::class, 'trx_rent_items_id');
     }
+
+    protected $casts = [
+        'status' => RentalStatus::class,
+    ];
 
     protected $fillable = [
         'trx_code',

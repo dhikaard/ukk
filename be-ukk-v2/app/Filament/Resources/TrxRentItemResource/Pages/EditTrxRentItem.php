@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources\TrxRentItemResource\Pages;
 
+use App\Enums\RentalStatus;
 use App\Filament\Resources\TrxRentItemResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class EditTrxRentItem extends EditRecord
 {
@@ -21,20 +23,61 @@ class EditTrxRentItem extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $previousStatus = $this->record->status;
+        // Convert previous status from Enum to string if needed
+        $previousStatus = $this->record->status instanceof RentalStatus 
+            ? $this->record->status->value 
+            : $this->record->status;
+            
         $newStatus = $data['status'];
+
+        Log::info('Status Update Check', [
+            'previous' => $previousStatus,
+            'new' => $newStatus,
+            'record_id' => $this->record->trx_rent_items_id
+        ]);
 
         // Validate status transitions
         if ($previousStatus) {
+            // Check D to P/B/T transition (prevent going back from active)
+            if ($previousStatus === 'D' && in_array($newStatus, ['P', 'B', 'T'])) {
+                Notification::make()
+                    ->title('Error')
+                    ->body('Status Sedang Disewa hanya dapat diubah menjadi Selesai')
+                    ->danger()
+                    ->persistent()
+                    ->send();
+                
+                $data['status'] = 'D';
+                $this->halt();
+                return $data;
+            }
+
+            // Check S to any status (prevent changing completed)
+            if ($previousStatus === 'S') {
+                Notification::make()
+                    ->title('Error')
+                    ->body('Transaksi yang sudah selesai tidak dapat diubah')
+                    ->danger()
+                    ->persistent()
+                    ->send();
+                    
+                $data['status'] = 'S';
+                $this->halt();
+                return $data;
+            }
+
+            // Check D to S transition (require return date)
             if ($newStatus === 'S' && $previousStatus === 'D') {
                 if (empty($data['return_date'])) {
                     Notification::make()
                         ->title('Error')
                         ->body('Tanggal pengembalian wajib diisi sebelum mengubah status menjadi Selesai')
                         ->danger()
+                        ->persistent()
                         ->send();
+                        
                     $data['status'] = 'D';
-                    $this->halt(); // Tambahkan ini untuk menghentikan proses penyimpanan
+                    $this->halt();
                     return $data;
                 }
             }
@@ -87,35 +130,79 @@ class EditTrxRentItem extends EditRecord
             if ($newStatus === 'D' && $previousStatus === 'P') {
                 DB::beginTransaction();
                 try {
+                    Log::info('Processing P to D transition', [
+                        'details' => $this->record->details->toArray()
+                    ]);
+
                     foreach ($this->record->details as $detail) {
+                        // For regular items
                         if ($detail->item_stock_id === -99) {
-                            $detail->item->decrement('stock', $detail->qty);
-                            
-                            // Check if regular stock is 0
-                            if ($detail->item->stock <= 0) {
-                                $detail->item->update(['active' => false]);
+                            $item = $detail->item;
+                            if ($item->stock < $detail->qty) {
+                                throw new \Exception("Stok tidak mencukupi untuk {$item->items_name}");
                             }
-                        } else {
+                            $item->decrement('stock', $detail->qty);
+                            
+                            Log::info('Regular stock updated', [
+                                'item' => $item->items_name,
+                                'qty' => $detail->qty,
+                                'new_stock' => $item->fresh()->stock
+                            ]);
+
+                            // Check if regular stock is 0
+                            if ($item->fresh()->stock <= 0) {
+                                $item->update(['active' => false]);
+                            }
+                        } 
+                        // For items with specific sizes
+                        else {
                             $itemStock = $detail->itemStock;
-                            if ($itemStock) {
-                                $itemStock->decrement('stock', $detail->qty);
-                                
-                                // Check if all size stocks are 0
-                                $totalSizeStock = $detail->item->itemStock()->sum('stock');
-                                if ($totalSizeStock <= 0 && $detail->item->stock <= 0) {
-                                    $detail->item->update(['active' => false]);
-                                }
+                            if (!$itemStock) {
+                                throw new \Exception("Size stock not found");
+                            }
+
+                            if ($itemStock->stock < $detail->qty) {
+                                throw new \Exception("Stok ukuran tidak mencukupi untuk {$detail->item->items_name}");
+                            }
+
+                            $itemStock->decrement('stock', $detail->qty);
+                            
+                            Log::info('Size stock updated', [
+                                'item' => $detail->item->items_name,
+                                'size' => $itemStock->size,
+                                'qty' => $detail->qty,
+                                'new_stock' => $itemStock->fresh()->stock
+                            ]);
+
+                            // Check if all size stocks are 0
+                            $totalSizeStock = $detail->item->itemStock()->sum('stock');
+                            if ($totalSizeStock <= 0 && $detail->item->stock <= 0) {
+                                $detail->item->update(['active' => false]);
                             }
                         }
                     }
                     DB::commit();
+                    
+                    Notification::make()
+                        ->title('Sukses')
+                        ->body('Status berhasil diubah dan stok diperbarui')
+                        ->success()
+                        ->send();
+
                 } catch (\Exception $e) {
                     DB::rollback();
+                    Log::error('Stock update failed', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+
                     Notification::make()
                         ->title('Error')
                         ->body('Gagal mengupdate stok: ' . $e->getMessage())
                         ->danger()
                         ->send();
+
+                    $data['status'] = $previousStatus;
                     $this->halt();
                 }
             }

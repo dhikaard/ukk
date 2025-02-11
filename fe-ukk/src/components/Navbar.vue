@@ -1,16 +1,74 @@
 <template>
     <div class="surface-section shadow-3 relative z-5">
         <CommandMenu :visible="commandMenuVisible" @update:visible="commandMenuVisible = $event" />
-        <div class="px-3 md:px-3 py-2 w-full flex align-items-center justify-content-between ">
+        <div class="px-3 md:px-3 py-2 w-full flex align-items-center gap-5">
             <img src=" /logo.webp" alt="Logo" class="md:hidden block border-circle h-3rem border-1 cursor-pointer"
                 @click="goToHome" />
-            <div class="flex w-full justify-content-end md:justify-content-between align-items-center gap-3">
+            <div class="flex w-full justify-content-between align-items-center gap-3">
                 <img src=" /logo.webp" alt="Logo" class="hidden md:block border-circle h-3rem  cursor-pointer"
                     @click="goToHome" />
-                <IconField iconPosition="left" class="w-7 hidden md:block">
-                    <InputIcon class="pi pi-search"> </InputIcon>
-                    <InputText v-model="value1" placeholder="Cari menu, pintasan, tema, dan yang lainnya.." class="w-full border-round-3xl  " @click="showCommandMenu" />
-                </IconField>
+                <template v-if="isAuthenticated">
+                    <IconField iconPosition="left" class="w-7">
+                        <InputIcon class="pi pi-search"> </InputIcon>
+                        <InputText v-model="value1" placeholder="Cari menu, pintasan, tema, dan yang lainnya.." class="w-full border-round-3xl" @click="showCommandMenu" />
+                    </IconField>
+                <div class="flex gap-4">
+                    <li class="inline-flex relative">
+                        <a
+                            data-notification-toggle
+                            class="flex align-items-center text-700 hover:text-900 font-medium border-round cursor-pointer md:hidden block"
+                            @click.stop="toggleNotifications">
+                            <i class="pi pi-bell text-base text-xl mr-2 mr-0"
+                                v-badge="notificationStore.overdueCount > 0 ? notificationStore.overdueCount : undefined">
+                            </i>
+                        </a>
+
+                        <!-- Notification Panel -->
+                        <div v-if="notificationsVisible"
+                            class="notification-panel surface-overlay border-1 border-round surface-border absolute right-0 top-100 shadow-2 origin-top"
+                            style="z-index: 1000;">
+                            <div class="p-3 surface-50 font-medium text-700 border-bottom-1 surface-border">
+                                Notifikasi Keterlambatan
+                            </div>
+
+                            <div v-if="notificationStore.loading" class="p-4">
+                                <Skeleton height="4rem" />
+                            </div>
+
+                            <div v-else-if="notificationStore.items.length === 0"
+                                class="p-4 text-center text-600">
+                                <i class="pi pi-check-circle text-xl mb-2"></i>
+                                <p class="m-0">Tidak ada keterlambatan</p>
+                            </div>
+
+                            <div v-else class="max-h-25rem overflow-auto">
+                                <div v-for="item in notificationStore.items"
+                                    :key="item.trx_rent_items_id"
+                                    class="p-3 border-bottom-1 surface-border hover:surface-100 cursor-pointer md:hidden block transition-colors transition-duration-150"
+                                    @click="goToHistory">
+                                    <div class="flex align-items-center mb-2">
+                                        <i class="pi pi-clock text-orange-500 mr-2"></i>
+                                        <span class="font-medium text-900">Keterlambatan Pengembalian</span>
+                                    </div>
+                                    <div class="text-600 mb-2">{{ item.trx_code }}</div>
+                                    <div class="text-sm text-red-500">
+                                        Jatuh tempo: {{ formatDate(item.rent_end_date) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="inline-flex relative">
+                        <a
+                            class="flex align-items-center text-700 hover:text-900 hover:surface-100 font-medium border-round cursor-pointer md:hidden block"
+                            @click="toggleCart">
+                            <i class="pi pi-shopping-cart text-base text-xl mr-2 mr-0"
+                            v-badge="cartStore.itemCount > 0 ? cartStore.itemCount : undefined"></i>
+                        </a>
+                        <Cart v-model:visible="cartVisible" />
+                    </li>
+                </div>
+            </template>
                 <span class="pi pi-bars text-4xl cursor-pointer block md:hidden text-700 p-ripple"
                     v-styleclass="{ selector: '#slideover-3', enterClass: 'hidden', enterActiveClass: 'fadeinright', leaveToClass: 'hidden', leaveActiveClass: 'fadeoutright', hideOnOutsideClick: true }"></span>
                 <div
@@ -18,16 +76,16 @@
                     <ul class="list-none p-0 m-0 flex gap-2">
                         <template v-if="!isAuthenticated">
                             <li class="inline-flex">
-                                <Button 
-                                    label="Masuk" 
+                                <Button
+                                    label="Masuk"
                                     class="p-button-text"
-                                    @click="router.push('/login')" 
-                                />
-                            </li>
+                                    @click="router.push('/login')"
+                                    />
+                                </li>
                             <li class="inline-flex">
-                                <Button 
-                                    label="Daftar" 
-                                    @click="router.push('/register')" 
+                                <Button
+                                    label="Daftar"
+                                    @click="router.push('/register')"
                                 />
                             </li>
                         </template>
@@ -40,31 +98,30 @@
                                     <i class="pi pi-bell text-base md:text-2xl mr-2 md:mr-0"
                                         v-badge="notificationStore.overdueCount > 0 ? notificationStore.overdueCount : undefined">
                                     </i>
-                                    <span class="block md:hidden font-medium">Notifikasi</span>
                                 </a>
 
                                 <!-- Notification Panel -->
-                                <div v-if="notificationsVisible" 
+                                <div v-if="notificationsVisible"
                                     class="notification-panel surface-overlay border-1 border-round surface-border absolute right-0 top-100 w-full md:w-25rem shadow-2 origin-top"
                                     style="z-index: 1000;">
                                     <div class="p-3 surface-50 font-medium text-700 border-bottom-1 surface-border">
                                         Notifikasi Keterlambatan
                                     </div>
-                                    
+
                                     <div v-if="notificationStore.loading" class="p-4">
                                         <Skeleton height="4rem" class="mb-2" />
                                         <Skeleton height="4rem" class="mb-2" />
                                         <Skeleton height="4rem" />
                                     </div>
-                                    
-                                    <div v-else-if="notificationStore.items.length === 0" 
+
+                                    <div v-else-if="notificationStore.items.length === 0"
                                         class="p-4 text-center text-600">
                                         <i class="pi pi-check-circle text-xl mb-2"></i>
                                         <p class="m-0">Tidak ada keterlambatan</p>
                                     </div>
-                                    
+
                                     <div v-else class="max-h-25rem overflow-auto">
-                                        <div v-for="item in notificationStore.items" 
+                                        <div v-for="item in notificationStore.items"
                                             :key="item.trx_rent_items_id"
                                             class="p-3 border-bottom-1 surface-border hover:surface-100 cursor-pointer transition-colors transition-duration-150"
                                             @click="goToHistory">
@@ -79,14 +136,14 @@
                                         </div>
                                     </div>
                                 </div>
+
                             </li>
                             <li class="inline-flex relative">
                                 <a v-ripple
                                     class="flex px-6 p-3 md:px-3 align-items-center text-600 hover:text-900 hover:surface-100 font-medium border-round cursor-pointer"
                                     @click="toggleCart">
-                                    <i class="pi pi-shopping-cart text-base md:text-2xl mr-2 md:mr-0" 
+                                    <i class="pi pi-shopping-cart text-base md:text-2xl mr-2 md:mr-0"
                                     v-badge="cartStore.itemCount > 0 ? cartStore.itemCount : ''"></i>
-                                    <span class="block md:hidden font-medium">Keranjang</span>
                                 </a>
                                 <Cart v-model:visible="cartVisible" />
                             </li>
@@ -338,7 +395,7 @@ const toggleNotifications = (event) => {
 };
 
 const closeNotifications = (e) => {
-    if (!e.target.closest('.notification-panel') && 
+    if (!e.target.closest('.notification-panel') &&
         !e.target.closest('[data-notification-toggle]')) {
         notificationsVisible.value = false;
     }

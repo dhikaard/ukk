@@ -13,7 +13,7 @@ class ManageItemController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Items::with(['ctgr_items', 'itemStock'])
+        $query = Items::with(['category', 'itemStock'])
             ->where('active', true);
 
         // Apply search filter
@@ -61,7 +61,7 @@ class ManageItemController extends Controller
 
     public function showDetail($itemsCode)
     {
-        $item = Items::with(['ctgr_items', 'itemStock'])
+        $item = Items::with(['category', 'itemStock'])
             ->where('items_code', $itemsCode)
             ->where('active', true)
             ->firstOrFail();
@@ -192,7 +192,7 @@ class ManageItemController extends Controller
         try {
             $user = auth('api')->user();
             $query = TrxRentItem::with([
-                'details.item.ctgr_items',
+                'details.item.category',
                 'details.itemStock'
             ])
             ->where('user_id', $user->id);
