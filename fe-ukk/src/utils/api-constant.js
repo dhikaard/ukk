@@ -32,5 +32,10 @@ export const ApiConstant = {
     CANCEL_RENT: {
         path: 'cancelRent',
         method: 'PUT'
+    },
+    SEARCH: {
+        path: 'search',
+        method: 'GET'
     }
+
 };

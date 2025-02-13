@@ -35,8 +35,8 @@
         <div v-else-if="product" class="grid mb-7">
             <div class="col-12 lg:col-6">
                 <div class="flex">
-                    <div class="pl-3 w-10">
-                        <img :src="product.image" :alt="product.name" class="w-full" />
+                    <div class="pl-3 w-12 border-round-lg">
+                        <img :src="product.image" :alt="product.name" class="w-full border-round-lg" />
                     </div>
                 </div>
             </div>
@@ -86,6 +86,7 @@
                                 buttonLayout="horizontal"
                                 inputClass="text-center"
                                 :step="1" />
+                                
                             <Button
                                 icon="pi pi-plus"
                                 @click="incrementQuantity"
@@ -166,7 +167,6 @@ const store = useRentViewStore();
 const cartStore = useCartStore();
 const product = ref(null);
 const quantity = ref(1);
-const dates = ref();
 const selectedSize = ref(null);
 const calendar = ref(null);
 const today = ref(new Date());

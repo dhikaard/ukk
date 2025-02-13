@@ -1,7 +1,7 @@
 <template>
     <div class="cart-wrapper" v-if="visible" @click="$emit('update:visible', false)">
         <div id="slideover-cart"
-             class="surface-section fixed top-0 right-0 shadow-2 w-full md:w-30rem h-full z-5"
+             class="surface-section fixed top-0 right-0 shadow-2 w-9 md:w-30rem h-full z-5"
              @click.stop>
             <div class="flex flex-column h-full">
                 <!-- Header -->

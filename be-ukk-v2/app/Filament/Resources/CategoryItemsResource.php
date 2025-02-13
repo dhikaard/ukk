@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class CategoryItemsResource extends Resource
 {
@@ -17,7 +18,11 @@ class CategoryItemsResource extends Resource
 
     protected static ?string $cluster = KonfigurasiBarang::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-list-bullet';
+    protected static ?string $navigationIcon = 'heroicon-o-tag';
+
+    protected static ?string $recordTitleAttribute = 'ctgr_items_name';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -40,29 +45,56 @@ class CategoryItemsResource extends Resource
                 Tables\Columns\TextColumn::make('ctgr_items_name')
                     ->searchable()
                     ->sortable()
-                    ->label('Nama Kategori Barang'),
-                Tables\Columns\ToggleColumn::make('active')
-                    ->label('Aktif'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Nama Kategori')
+                    ->icon('heroicon-m-tag')
+                    ->weight('bold'),
+
+                Tables\Columns\TextColumn::make('items_count')
+                    ->label('Jumlah Barang')
+                    ->counts('items')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->alignCenter(),
+
+                Tables\Columns\IconColumn::make('active')
+                    ->label('Status')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger'),
+
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Terakhir Diupdate')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->since(),
             ])
-            ->searchPlaceholder('Cari Kategori Barang')
-            ->striped()
+            ->defaultSort('updated_at', 'desc')
+            ->searchPlaceholder('Cari kategori barang...')
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('active')
+                    ->label('Status')
+                    ->placeholder('Semua Status')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Tidak Aktif')
+                    ->native(false),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->icon('heroicon-m-pencil'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('activate')
+                        ->label('Aktifkan')
+                        ->icon('heroicon-o-check')
+                        ->action(fn ($records) => $records->each->update(['active' => true])),
+                    Tables\Actions\BulkAction::make('deactivate')
+                        ->label('Nonaktifkan')
+                        ->icon('heroicon-o-x-mark')
+                        ->color('danger')
+                        ->action(fn ($records) => $records->each->update(['active' => false])),
                 ]),
             ]);
     }
@@ -82,10 +114,23 @@ class CategoryItemsResource extends Resource
         return 'primary';
     }
 
-    public static function getRelations(): array
+    public static function getGloballySearchableAttributes(): array
     {
         return [
-            //
+            'ctgr_items_name',
+        ];
+    }
+    
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return $record->ctgr_items_name;
+    }
+    
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Jumlah Barang' => $record->count() . ' barang',
+            'Status' => $record->active ? 'Aktif' : 'Tidak Aktif',
         ];
     }
 

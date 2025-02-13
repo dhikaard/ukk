@@ -2,40 +2,60 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\RentalStatus;
+use App\Filament\NavigationGroups;
 use App\Filament\Resources\TrxRentItemResource\Pages;
+use App\Filament\Widgets\RentStats;
 use App\Models\Items;
 use App\Models\TrxRentItem;
 use App\Models\User;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Carbon\Carbon;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class TrxRentItemResource extends Resource
 {
     protected static ?string $model = TrxRentItem::class;
+
+    protected static ?string $modelLabel = 'Penyewaan';
+    protected static ?string $pluralModelLabel = 'Data Penyewaan';
+    protected static ?string $navigationLabel = 'Penyewaan';
+    protected static ?string $navigationGroup = NavigationGroups::RENT_MANAGEMENT;
+    protected static ?int $navigationSort = 2;
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static ?string $recordTitleAttribute = 'trx_code';
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             // Customer Information Section
             Forms\Components\Section::make('Informasi Penyewa')
+                ->description('Masukkan informasi penyewa dan periode sewa')
                 ->schema([
                     Forms\Components\Grid::make(2)
                         ->schema([
                             Forms\Components\TextInput::make('trx_code')
-                                ->label('Kode Transaksi')
-                                ->disabled()
-                                ->dehydrated(true),
+                            ->label('Kode Transaksi')
+                            ->disabled()
+                            ->dehydrated(true) // Add this to ensure value persists
+                            ->default(function ($record) {
+                                if ($record) {
+                                    return $record->trx_code;
+                                }
+                                return null;
+                            }),
                             Forms\Components\Select::make('user_id')
                                 ->label('Penyewa')
+                                ->disabled(fn ($livewire) => $livewire instanceof Pages\EditTrxRentItem)
                                 ->required()
                                 ->searchable()
                                 ->preload()
@@ -50,6 +70,7 @@ class TrxRentItemResource extends Resource
                     Forms\Components\Grid::make(2)
                         ->schema([
                             Forms\Components\DateTimePicker::make('rent_start_date')
+                                ->disabled(fn ($livewire) => $livewire instanceof Pages\EditTrxRentItem)
                                 ->label('Tanggal Mulai Sewa')
                                 ->required()
                                 ->native(false)
@@ -57,6 +78,7 @@ class TrxRentItemResource extends Resource
                                 ->reactive()
                                 ->afterStateUpdated(fn (Get $get, Set $set) => self::calculateDuration($get, $set)),
                             Forms\Components\DateTimePicker::make('rent_end_date')
+                                ->disabled(fn ($livewire) => $livewire instanceof Pages\EditTrxRentItem)
                                 ->label('Tanggal Selesai Sewa')
                                 ->required()
                                 ->native(false)
@@ -81,11 +103,13 @@ class TrxRentItemResource extends Resource
                                 ->disabled()
                                 ->prefix('Rp'),
                         ]),
-                ]),
+                ])
+                ->columns(2)
+                ->disabled(fn ($livewire) => $livewire instanceof Pages\EditTrxRentItem),
 
             // Rental Details Section
-            Forms\Components\Section::make('Detail Penyewaan')
-                ->description('Tambahkan barang yang disewa dan lihat perhitungan harga sewa di sini.')
+            Forms\Components\Section::make('Detail Barang')
+                ->description('Pilih barang yang akan disewa dan jumlahnya')
                 ->schema([
                     Forms\Components\Repeater::make('details')
                         ->relationship('details')
@@ -116,7 +140,6 @@ class TrxRentItemResource extends Resource
                                                         $trxCode = "TRX-{$itemPrefix}-" . date('dmy') . "-{$id}";
                                                         $set('../../trx_code', $trxCode);
                                                     }
-
                                                     // Set initial qty and calculate subtotal
                                                     $qty = $get('qty') ?? 1;
                                                     self::calculateSubTotal($get, $set, $state, $qty);
@@ -229,7 +252,7 @@ class TrxRentItemResource extends Resource
                                                 self::calculateSubTotal($get, $set, $itemId, $qty);
                                             }
                                         })
-                                ]),
+                                ])
                         ])
                         ->required()
                         ->minItems(1)
@@ -242,37 +265,37 @@ class TrxRentItemResource extends Resource
                             Log::info('Calculating total:', ['state' => $state, 'total' => $total]);
                             $set('../../total', $total);  // Set parent total
                         }),
-                ]),
+                ])
+                ->columns(['sm' => 1, 'lg' => 1])
+                ->disabled(fn ($livewire) => $livewire instanceof Pages\EditTrxRentItem),
 
             // Status & Description Section
-            Forms\Components\Section::make('Status dan Deskripsi')
+            Forms\Components\Section::make('Status & Keterangan')
                 ->schema([
                     Forms\Components\Grid::make(2)
                         ->schema([
-                            Forms\Components\Select::make('status')
-                                ->label('Status')
+                            Forms\Components\ToggleButtons::make('status')
+                                ->inline()
+                                ->options(RentalStatus::class)
+                                ->enum(RentalStatus::class)
                                 ->required()
-                                ->options([
-                                    'P' => 'Pending',
-                                    'D' => 'Sedang Disewa',
-                                    'S' => 'Selesai',
-                                    'B' => 'Dibatalkan',
-                                    'T' => 'Ditolak',
-                                ])
+                                ->disabled(fn ($livewire) => $livewire instanceof Pages\CreateTrxRentItem)
                                 ->default('P')
-                                ->disabled(fn ($livewire) => $livewire instanceof Pages\CreateTrxRentItem),
+                                ->reactive(),
+
                             Forms\Components\DateTimePicker::make('return_date')
                                 ->label('Tanggal Pengembalian')
                                 ->native(false)
                                 ->displayFormat('d/m/Y H:i')
-                                ->visible(fn ($record) => $record && in_array($record->status, ['D', 'S']))
+                                ->visible(fn (Get $get) => in_array($get('status'), ['D', 'S']))
+                                ->required(fn (Get $get) => $get('status') === 'D'),
                         ]),
 
                     Forms\Components\Textarea::make('desc')
                         ->label('Deskripsi')
                         ->rows(3)
                         ->columnSpanFull()
-                ]),
+                ])->columnSpanFull(),
         ])
         ->disabled(fn ($record) => $record && in_array($record->status, ['S', 'B', 'T']));
     }
@@ -367,63 +390,123 @@ class TrxRentItemResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('trx_code')
-                    ->label('Kode Transaksi')
-                    ->searchable(),
+                    ->label('No. Transaksi')
+                    ->searchable()
+                    ->sortable()
+                    ->copyable()
+                    ->copyMessage('Nomor transaksi disalin')
+                    ->copyMessageDuration(1500),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Penyewa')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('rent_start_date')
-                    ->label('Mulai Sewa')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('rent_end_date')
-                    ->label('Selesai Sewa')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('total')
-                    ->label('Total Harga')
-                    ->money('IDR', true)
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('total_fine_amount')
-                    ->label('Jumlah Denda')
-                    ->money('IDR', true)
-                    ->sortable(),
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->getStateUsing(function ($record) {
-                        $statusLabels = [
-                            'P' => 'Pending',
-                            'D' => 'Sedang Disewa',
-                            'S' => 'Selesai',
-                            'B' => 'Dibatalkan',
-                            'T' => 'Ditolak',
-                        ];
-                        return $statusLabels[$record->status] ?? 'Unknown';
-                    })
-                    ->sortable(),
+                    ->badge(),
+                Tables\Columns\TextColumn::make('total')
+                    ->label('Total Pembayaran')
+                    ->money('IDR')
+                    ->sortable()
+                    ->summarize([
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->money('IDR')
+                            ->label('Total'),
+                    ]),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Tanggal Sewa')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'P' => 'Pending',
-                        'D' => 'Sedang Disewa',
-                        'S' => 'Selesai',
-                        'B' => 'Dibatalkan',
-                        'T' => 'Ditolak',
-                    ]),
+                    ->label('Status')
+                    ->options(RentalStatus::class)
+                    ->multiple(),
+
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label('Dari Tanggal')
+                            ->placeholder('Pilih tanggal awal')
+                            ->native(false),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label('Sampai Tanggal')
+                            ->placeholder('Pilih tanggal akhir')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['created_from'] ?? null) {
+                            $indicators['created_from'] = 'Dari ' . Carbon::parse($data['created_from'])->toFormattedDateString();
+                        }
+                        if ($data['created_until'] ?? null) {
+                            $indicators['created_until'] = 'Sampai ' . Carbon::parse($data['created_until'])->toFormattedDateString();
+                        }
+
+                        return $indicators;
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+            ->groups([
+                Tables\Grouping\Group::make('created_at')
+                    ->label('Tanggal Sewa')
+                    ->date()
+                    ->collapsible(),
             ]);
     }
 
-    public static function getRelations(): array
+    public static function getNavigationBadge(): ?string
     {
-        return [];
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'primary';
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            RentStats::class,
+        ];
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'trx_code',
+            'user.name',
+            'status',
+        ];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return $record->trx_code;
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Penyewa' => $record->user->name,
+            'Status' => $record->status->getLabel(),
+            'Total' => 'Rp ' . number_format($record->total, 0, ',', '.'),
+        ];
     }
 
     public static function getPages(): array

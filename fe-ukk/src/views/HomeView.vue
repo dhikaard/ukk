@@ -44,7 +44,7 @@
         </div>
         
         <div class="flex justify-content-center mt-4">
-          <Button label="Lihat Semua Produk" icon="pi pi-arrow-right" outlined @click="router.push('/sewa')" />
+          <Button label="Lihat Semua Produk" icon="pi pi-arrow-right" outlined @click="router.push('/rent')" />
         </div>
       </div>
     </div>

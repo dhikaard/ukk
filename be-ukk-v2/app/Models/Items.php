@@ -13,21 +13,21 @@ class Items extends Model
     protected $primaryKey = 'items_id';
     public $incrementing = true;
 
-    public function ctgr_items(): BelongsTo
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(CategoryItems::class, 'ctgr_items_id');
+        return $this->belongsTo(CategoryItems::class, 'ctgr_items_id', 'ctgr_items_id');
     }
-    
+
     public function itemStock(): HasMany
     {
-        return $this->hasMany(ItemsStock::class, 'items_id');
+        return $this->hasMany(ItemsStock::class, 'items_id', 'items_id');
     }
-        
+
     public function globalFine(): BelongsTo
     {
         return $this->belongsTo(GlobalFine::class, 'global_fine_id', 'global_fine_id');
     }
-    
+    protected $with = ['itemStock']; // Eager load itemStock relationship
     protected $fillable = [
         'items_name',
         'items_code',

@@ -73,7 +73,7 @@ export const useRentViewStore = defineStore(
                         code: item.items_code,
                         image: item.image,
                         price: item.price,
-                        category: item.ctgr_items.ctgr_items_name,
+                        category: item.category.ctgr_items_name,
                         quantity: item.stock + (item.item_stock?.reduce((sum, stock) => sum + stock.stock, 0) || 0),
                         inventoryStatus: (item.stock + (item.item_stock?.reduce((sum, stock) => sum + stock.stock, 0) || 0)) > 0 ? 'INSTOCK' : 'OUTOFSTOCK'
                     }));
@@ -119,7 +119,7 @@ export const useRentViewStore = defineStore(
                         name: result.data.items_name,
                         image: result.data.image,
                         price: result.data.price,
-                        category: result.data.ctgr_items.ctgr_items_name,
+                        category: result.data.category.ctgr_items_name,
                         quantity: result.data.stock + (result.data.item_stock?.reduce((sum, item) => sum + item.stock, 0) || 0),
                         description: result.data.desc,
                         sizes: result.data.item_stock || [],

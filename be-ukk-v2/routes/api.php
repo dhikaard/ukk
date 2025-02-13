@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\GlobalSearchController;
 use App\Http\Controllers\Api\ManageItemController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,7 @@ Route::prefix('/v1/rent')->group(function () {
 
     // Protected routes
     Route::middleware('auth:api')->group(function () {
+        Route::get('/search', [GlobalSearchController::class, 'search']); // Change to get
         Route::post('/addRent', [ManageItemController::class, 'addRent']);
         Route::get('/getRentHistory', [ManageItemController::class, 'getRentHistory']);
         Route::put('/cancelRent', [ManageItemController::class, 'cancelRent']);

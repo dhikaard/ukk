@@ -4,6 +4,8 @@ namespace App\Filament\Resources\ItemsResource\Pages;
 
 use App\Filament\Resources\ItemsResource;
 use App\Models\TrxRentItem;
+use App\Models\TrxRentItemDetail;
+use Illuminate\Support\Facades\DB;
 use Filament\Notifications\Notification;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -54,9 +56,8 @@ class EditItems extends EditRecord
         return $data;
     }
 
-    public function beforeEdit(): void
+    protected function beforeEdit(): void 
     {
-        // Check before form loads
         $activeRentals = TrxRentItem::whereHas('details', function ($query) {
             $query->where('items_id', $this->record->items_id);
         })->where('status', 'D')->count();
@@ -64,7 +65,7 @@ class EditItems extends EditRecord
         if ($activeRentals > 0) {
             Notification::make()
                 ->title('Error')
-                ->body('Barang ini sedang dalam penyewaan. Tidak dapat diedit.')
+                ->body('Barang ini sedang dalam penyewaan aktif. Tidak dapat diedit.')
                 ->danger()
                 ->persistent()
                 ->send();
@@ -78,7 +79,7 @@ class EditItems extends EditRecord
         return [
             Actions\DeleteAction::make()
                 ->before(function () {
-                    // Check before deletion
+                    // Check active rentals
                     $activeRentals = TrxRentItem::whereHas('details', function ($query) {
                         $query->where('items_id', $this->record->items_id);
                     })->where('status', 'D')->count();
@@ -86,12 +87,34 @@ class EditItems extends EditRecord
                     if ($activeRentals > 0) {
                         Notification::make()
                             ->title('Error')
-                            ->body('Barang ini sedang dalam penyewaan. Tidak dapat dihapus.')
+                            ->body('Barang ini sedang dalam penyewaan aktif. Tidak dapat dihapus.')
                             ->danger()
                             ->send();
 
                         $this->halt();
                     }
+
+                    // Handle cascade deletion
+                    DB::transaction(function () {
+                        // Get all rental details with this item
+                        $details = TrxRentItemDetail::where('items_id', $this->record->items_id)->get();
+                        
+                        foreach ($details as $detail) {
+                            $rental = $detail->trxRentItem;
+                            
+                            // Delete the detail
+                            $detail->delete();
+                            
+                            // If rental has no more details, delete it
+                            if ($rental->details()->count() === 0) {
+                                $rental->delete();
+                            } else {
+                                // Recalculate rental total
+                                $newTotal = $rental->details()->sum('sub_total');
+                                $rental->update(['total' => $newTotal]);
+                            }
+                        }
+                    });
                 }),
         ];
     }

@@ -18,47 +18,16 @@ class CreateTrxRentItem extends CreateRecord
 
     protected function handleRecordCreation(array $data): Model 
     {
-        // Log complete data structure first
-        Log::info('Raw form data:', [
-            'data' => $data,
-            'details' => $data['details'] ?? 'No details found'
-        ]);
-
         return DB::transaction(function () use ($data) {
             // Calculate duration
             $startDate = Carbon::parse($data['rent_start_date']);
             $endDate = Carbon::parse($data['rent_end_date']);
             $duration = $startDate->diffInDays($endDate) + 1;
 
-            // Get and log details
+            // Get details
             $details = $data['details'] ?? [];
-            Log::info('Processing details:', ['details' => $details]);
 
-            $total = 0;
-            
-            // Calculate and log total
-            foreach ($details as $detail) {
-                $item = Items::find($detail['items_id']);
-                if ($item) {
-                    $subTotal = $item->price * $detail['qty'] * $duration;
-                    $total += $subTotal;
-                    
-                    Log::info('Calculated subtotal:', [
-                        'item_id' => $detail['items_id'],
-                        'price' => $item->price,
-                        'qty' => $detail['qty'],
-                        'duration' => $duration,
-                        'subtotal' => $subTotal
-                    ]);
-                }
-            }
-
-            Log::info('Final calculation:', [
-                'total' => $total,
-                'duration' => $duration
-            ]);
-
-            // Create main transaction
+            // Create main transaction using existing trx_code
             $trxRentItem = TrxRentItem::create([
                 'trx_code' => $data['trx_code'],
                 'user_id' => $data['user_id'],
@@ -68,10 +37,10 @@ class CreateTrxRentItem extends CreateRecord
                 'status' => 'P',
                 'total' => $data['total'],
                 'total_fine_amount' => 0,
-                'desc' => $data['desc'] ?? ''
+                'desc' => $data['desc'] ?? null
             ]);
 
-            // Create details with logging
+            // Create details
             foreach ($details as $detail) {
                 $item = Items::find($detail['items_id']);
                 $subTotal = $item->price * $detail['qty'] * $duration;
