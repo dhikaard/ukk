@@ -36,9 +36,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->font('Poppins')
             ->brandName('Rental Admin')
-            ->brandLogo(asset('images/logo.png'))
+            ->brandLogo(asset('images/logo.jpg'))
             ->brandLogoHeight('3rem')
-            ->favicon(asset('images/favicon.ico'))
+            ->favicon(asset('images/logo.jpg'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters') 
@@ -47,7 +47,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             // ->databaseNotifications()
-            
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

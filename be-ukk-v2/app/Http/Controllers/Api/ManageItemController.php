@@ -139,7 +139,7 @@ class ManageItemController extends Controller
 
                     // Calculate subtotal
                     $subTotal = $itemData->price * $item['qty'] * $duration;
-                    
+
                     // Get item_stock_id if size is specified
                     $itemStockId = null;
                     if ($item['size']) {
@@ -163,6 +163,12 @@ class ManageItemController extends Controller
                     $total += $subTotal;
                 }
 
+                // Get admin contact
+                $admin = DB::table('users')
+                ->where('role_id', 1)
+                ->where('active', true)
+                ->first();
+
                 // Update total
                 $rentItem->update(['total' => $total]);
 
@@ -171,7 +177,10 @@ class ManageItemController extends Controller
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Pesanan berhasil dibuat',
-                    'data' => $rentItem->load('details.item')
+                    'data' => [
+                        'rental' => $rentItem->load('details.item'),
+                        'admin_phone' => $admin ? $admin->phone : null
+                    ]
                 ]);
 
             } catch (\Exception $e) {
@@ -197,14 +206,32 @@ class ManageItemController extends Controller
             ])
             ->where('user_id', $user->id);
     
-            // Apply status filter if provided and not empty
-            if ($request->has('status') && $request->status !== '') {
+            // Apply date range filter
+            if ($request->start_date) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+            if ($request->end_date) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+    
+            // Apply status filter
+            if ($request->status) {
                 $query->where('status', $request->status);
+            }
+    
+            // Apply search filter
+            if ($request->search) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('trx_code', 'like', "%{$search}%")
+                    ->orWhereHas('details.item', function($q) use ($search) {
+                        $q->where('items_name', 'like', "%{$search}%");
+                    });
+                });
             }
     
             $rentItems = $query->orderBy('created_at', 'desc')->get();
     
-            // Transform items...
             $rentItems->transform(function ($rentItem) {
                 $rentItem->details->transform(function ($detail) {
                     if ($detail->item && $detail->item->image) {
@@ -216,7 +243,7 @@ class ManageItemController extends Controller
                 });
                 return $rentItem;
             });
-    
+
             return response()->json($rentItems);
         } catch (\Exception $e) {
             return response()->json([
@@ -225,7 +252,7 @@ class ManageItemController extends Controller
             ], 400);
         }
     }
-    
+
     public function cancelRent(Request $request)
     {
         try {
@@ -233,18 +260,18 @@ class ManageItemController extends Controller
             $request->validate([
                 'id' => 'required|exists:trx_rent_items,trx_rent_items_id'
             ]);
-    
+
             $user = auth('api')->user();
             $rentItem = TrxRentItem::where('user_id', $user->id)
                 ->where('trx_rent_items_id', $request->id)
                 ->where('status', 'P')
                 ->firstOrFail();
-    
+
             DB::beginTransaction();
             try {
                 // Update status
                 $rentItem->update(['status' => 'B']);
-    
+
                 DB::commit();
                 return response()->json([
                     'status' => 'success',

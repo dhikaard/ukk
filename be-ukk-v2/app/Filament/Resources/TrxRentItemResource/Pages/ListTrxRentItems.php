@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\TrxRentItemResource\Pages;
 
 use App\Filament\Resources\TrxRentItemResource;
-use App\Filament\Widgets\RentStats;
+use App\Filament\Resources\TrxRentItemResource\Widgets\RentStats;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Resources\Components\Tab;

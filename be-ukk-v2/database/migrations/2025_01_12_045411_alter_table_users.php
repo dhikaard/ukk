@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->bigInteger('role_id')->default(-99);
             $table->string('address', 256)->default('');
-            $table->integer('phone')->default(-99);
+            $table->string('phone')->default('');
             $table->boolean('active')->default(true);
             $table->dropColumn('email_verified_at');
         });

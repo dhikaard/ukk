@@ -78,8 +78,8 @@ class ItemsResource extends Resource
                                     ->preserveFilenames()
                                     ->maxSize(2048)
                                     ->acceptedFileTypes(['image/png', 'image/jpg', 'image/jpeg'])
-                                    ->helperText('Format: PNG, JPG, JPEG. Maksimal 2MB'),                            ]),
-
+                                    ->helperText('Format: PNG, JPG, JPEG. Maksimal 2MB')
+                                ]),
                         Forms\Components\Section::make('Stock')
                             ->schema([
                                 Forms\Components\TextInput::make('stock')
