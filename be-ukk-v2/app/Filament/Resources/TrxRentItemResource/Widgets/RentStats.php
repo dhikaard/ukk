@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Widgets;
+namespace App\Filament\Resources\TrxRentItemResource\Widgets;
 
 use App\Models\TrxRentItem;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;

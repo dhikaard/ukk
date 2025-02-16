@@ -23,6 +23,13 @@ return new class extends Migration
             $table->double('total_fine_amount')->default(0);
             $table->double('total')->default(0);
             $table->text('desc')->nullable();
+            $table->double('penalty_fines')->default(0);
+            $table->string('flg_payment')->default('N')->comment('N=Not Paid, P=Paid');
+            $table->string('payment_id')->nullable();
+            $table->string('payment_method')->nullable();
+            $table->string('payment_status')->nullable();
+            $table->string('payment_url')->nullable();
+
             $table->timestamps();
         });
     }

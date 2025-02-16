@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\RentalStatus;
 use App\Filament\NavigationGroups;
 use App\Filament\Resources\TrxRentItemResource\Pages;
-use App\Filament\Widgets\RentStats;
+use App\Filament\Resources\TrxRentItemResource\Widgets\RentStats;
 use App\Models\Items;
 use App\Models\TrxRentItem;
 use App\Models\User;
@@ -18,6 +18,8 @@ use Filament\Tables\Table;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -95,14 +97,15 @@ class TrxRentItemResource extends Resource
                             Forms\Components\TextInput::make('total')
                                 ->label('Total Harga')
                                 ->disabled()
-                                ->dehydrated(true)  // Add this to ensure value persists
-                                ->reactive()        // Make reactive
+                                ->dehydrated(true)
+                                ->reactive()
                                 ->prefix('Rp'),
-                            Forms\Components\TextInput::make('total_fine_amount')
+                                Forms\Components\TextInput::make('total_fine_amount')
                                 ->label('Total Denda')
                                 ->disabled()
-                                ->prefix('Rp'),
-                        ]),
+                                ->prefix('Rp')
+                                ->visible(fn (Get $get) => in_array($get('status'), ['D', 'S']))
+                            ]),
                 ])
                 ->columns(2)
                 ->disabled(fn ($livewire) => $livewire instanceof Pages\EditTrxRentItem),
@@ -271,31 +274,41 @@ class TrxRentItemResource extends Resource
 
             // Status & Description Section
             Forms\Components\Section::make('Status & Keterangan')
-                ->schema([
-                    Forms\Components\Grid::make(2)
-                        ->schema([
-                            Forms\Components\ToggleButtons::make('status')
-                                ->inline()
-                                ->options(RentalStatus::class)
-                                ->enum(RentalStatus::class)
-                                ->required()
-                                ->disabled(fn ($livewire) => $livewire instanceof Pages\CreateTrxRentItem)
-                                ->default('P')
-                                ->reactive(),
-
+            ->schema([
+                Forms\Components\Grid::make(2)
+                    ->schema([
+                        Forms\Components\ToggleButtons::make('status')
+                            ->inline()
+                            ->options(RentalStatus::class)
+                            ->enum(RentalStatus::class)
+                            ->required()
+                            ->disabled(fn (Get $get) => $get('status') === 'S')
+                            ->default('P')
+                            ->reactive(),
+                            
                             Forms\Components\DateTimePicker::make('return_date')
-                                ->label('Tanggal Pengembalian')
-                                ->native(false)
-                                ->displayFormat('d/m/Y H:i')
-                                ->visible(fn (Get $get) => in_array($get('status'), ['D', 'S']))
-                                ->required(fn (Get $get) => $get('status') === 'D'),
-                        ]),
+                            ->label('Tanggal Pengembalian')
+                            ->native(false)
+                            ->displayFormat('d/m/Y H:i')
+                            ->visible(fn (Get $get) => in_array($get('status'), ['S']))
+                            ->disabled(fn (Get $get) => $get('status') === 'S'),
 
-                    Forms\Components\Textarea::make('desc')
-                        ->label('Deskripsi')
-                        ->rows(3)
-                        ->columnSpanFull()
-                ])->columnSpanFull(),
+                        Forms\Components\TextInput::make('penalty_fines')
+                            ->label('Denda Tambahan')
+                            ->prefix('Rp')
+                            ->numeric()
+                            ->default(0)
+                            ->disabled(fn (Get $get) => $get('status') !== 'D')
+                            ->visible(fn (Get $get) => in_array($get('status'), ['D', 'S']))
+                            ->live(false)
+                            ->dehydrated(),
+                    ]),
+                Forms\Components\Textarea::make('desc')
+                    ->label('Deskripsi')
+                    ->rows(3)
+                    ->columnSpanFull()
+            ])
+            ->columnSpanFull()
         ])
         ->disabled(fn ($record) => $record && in_array($record->status, ['S', 'B', 'T']));
     }

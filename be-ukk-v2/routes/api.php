@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\Api\GlobalSearchController;
 use App\Http\Controllers\Api\ManageItemController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('/v1/rent')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/items', [ManageItemController::class, 'index']);
     Route::get('/categories', [ManageItemController::class, 'getCategories']);
@@ -19,5 +22,10 @@ Route::prefix('/v1/rent')->group(function () {
         Route::post('/addRent', [ManageItemController::class, 'addRent']);
         Route::get('/getRentHistory', [ManageItemController::class, 'getRentHistory']);
         Route::put('/cancelRent', [ManageItemController::class, 'cancelRent']);
+
+        Route::post('profile/update', [ProfileController::class, 'update']);
+
+        Route::post('/createPayment', [PaymentController::class, 'createPayment']);
+        Route::get('/checkPayment', [PaymentController::class, 'checkPaymentStatus']); 
     });
 });

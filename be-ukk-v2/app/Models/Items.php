@@ -27,6 +27,7 @@ class Items extends Model
     {
         return $this->belongsTo(GlobalFine::class, 'global_fine_id', 'global_fine_id');
     }
+
     protected $with = ['itemStock']; // Eager load itemStock relationship
     protected $fillable = [
         'items_name',
